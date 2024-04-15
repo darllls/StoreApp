@@ -15,6 +15,24 @@ namespace WebApi.Controllers
             _repository = repository;
         }
 
+        [HttpGet]
+        public async Task<IActionResult> GetAllProducts()
+        {
+            var products = await _repository.GetAllProductsAsync();
+            return Ok(products);
+        }
+
+        [HttpGet("{productId}")]
+        public async Task<IActionResult> GetProduct(int productId)
+        {
+            var product = await _repository.GetProductByIdAsync(productId);
+            if (product == null)
+                return NotFound();
+
+            return Ok(product);
+        }
+
+
         [HttpPost]
         public async Task<IActionResult> CreateProduct(ProductDTO productDto)
         {
@@ -32,23 +50,7 @@ namespace WebApi.Controllers
             return Ok(updatedProduct);
         }
 
-        [HttpGet("{productId}")]
-        public async Task<IActionResult> GetProduct(int productId)
-        {
-            var product = await _repository.GetProductByIdAsync(productId);
-            if (product == null)
-                return NotFound();
-
-            return Ok(product);
-        }
-
-        [HttpGet]
-        public async Task<IActionResult> GetAllProducts()
-        {
-            var products = await _repository.GetAllProductsAsync();
-            return Ok(products);
-        }
-
+        
         [HttpDelete("{productId}")]
         public async Task<IActionResult> DeleteProduct(int productId)
         {
