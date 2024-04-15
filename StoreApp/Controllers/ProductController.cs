@@ -1,0 +1,62 @@
+﻿using Business.Repository.IRepository;
+using DTOs;
+using Microsoft.AspNetCore.Mvc;
+
+namespace WebApi.Controllers
+{
+    [Route("api/[controller]")]
+    [ApiController]
+    public class ProductController : ControllerBase
+    {
+        private readonly IProductRepository _repository;
+
+        public ProductController(IProductRepository repository)
+        {
+            _repository = repository;
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> CreateProduct(ProductDTO productDto)
+        {
+            var createdProduct = await _repository.CreateProductAsync(productDto);
+            return Ok(createdProduct);
+        }
+
+        [HttpPut("{productId}")]
+        public async Task<IActionResult> UpdateProduct(int productId, ProductDTO productDto)
+        {
+            var updatedProduct = await _repository.UpdateProductAsync(productId, productDto);
+            if (updatedProduct == null)
+                return NotFound();
+
+            return Ok(updatedProduct);
+        }
+
+        [HttpGet("{productId}")]
+        public async Task<IActionResult> GetProduct(int productId)
+        {
+            var product = await _repository.GetProductByIdAsync(productId);
+            if (product == null)
+                return NotFound();
+
+            return Ok(product);
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> GetAllProducts()
+        {
+            var products = await _repository.GetAllProductsAsync();
+            return Ok(products);
+        }
+
+        [HttpDelete("{productId}")]
+        public async Task<IActionResult> DeleteProduct(int productId)
+        {
+            var result = await _repository.DeleteProductAsync(productId);
+            if (!result)
+                return NotFound();
+
+            return NoContent();
+        }
+    }
+}
