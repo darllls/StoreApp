@@ -7,12 +7,13 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Business.Mapper
+namespace Bussiness.Mapper
 {
-    public class MappingProfile: Profile
+    public class MappingProfile : Profile
     {
         public MappingProfile()
         {
+            CreateMap<CustomerType, CustomerTypeDTO>().ReverseMap();
             CreateMap<Customer, CustomerDTO>()
                 .ForMember(dest => dest.CustomerTypeName, opt => opt.MapFrom(src => src.CustomerType.TypeName))
                 .ReverseMap();

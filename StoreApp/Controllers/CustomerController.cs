@@ -1,4 +1,4 @@
-﻿using Business.Repository.IRepository;
+﻿using Bussiness.Repository.IRepository;
 using DTOs;
 using Microsoft.AspNetCore.Mvc;
 

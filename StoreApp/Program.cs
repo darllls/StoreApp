@@ -1,5 +1,5 @@
-using Business.Repository;
-using Business.Repository.IRepository;
+using Bussiness.Repository;
+using Bussiness.Repository.IRepository;
 using DataContext.Data;
 using Microsoft.EntityFrameworkCore;
 
@@ -17,8 +17,14 @@ builder.Services.AddDbContext<StoreDbContext>(options =>
 builder.Services.AddScoped<ICustomerRepository, CustomerRepository>();
 builder.Services.AddScoped<IEmployeeRepository, EmployeeRepository>();
 builder.Services.AddScoped<IProductRepository, ProductRepository>();
+builder.Services.AddScoped<ICustomerTypeRepository, CustomerTypeRepository>();
 
 builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
+
+builder.Services.AddCors(o => o.AddPolicy("Store", builder =>
+{
+    builder.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader();
+}));
 
 
 var app = builder.Build();
@@ -32,6 +38,7 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 app.UseRouting();
+app.UseCors("Store");
 app.UseAuthorization();
 
 app.MapControllers();

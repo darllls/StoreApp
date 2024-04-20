@@ -2,12 +2,12 @@
 using System.Linq;
 using System.Threading.Tasks;
 using AutoMapper;
-using Business.Repository.IRepository;
 using DataContext.Data;
 using DataContext;
 using DataContext.Models;
 using DTOs;
 using Microsoft.EntityFrameworkCore;
+using Bussiness.Repository.IRepository;
 
 public class ProductRepository: IProductRepository
 {

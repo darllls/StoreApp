@@ -11,6 +11,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DTOs", "..\DTOs\DTOs.csproj
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Bussiness", "..\Bussiness\Bussiness.csproj", "{DC399FB2-2A1D-4E9C-9C9E-8A4900CA7EF0}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "StoreWeb", "..\StoreWeb\StoreWeb.csproj", "{FBA2A512-E5B5-4383-BA28-D6E840616789}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -33,6 +35,10 @@ Global
 		{DC399FB2-2A1D-4E9C-9C9E-8A4900CA7EF0}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{DC399FB2-2A1D-4E9C-9C9E-8A4900CA7EF0}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{DC399FB2-2A1D-4E9C-9C9E-8A4900CA7EF0}.Release|Any CPU.Build.0 = Release|Any CPU
+		{FBA2A512-E5B5-4383-BA28-D6E840616789}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FBA2A512-E5B5-4383-BA28-D6E840616789}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FBA2A512-E5B5-4383-BA28-D6E840616789}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FBA2A512-E5B5-4383-BA28-D6E840616789}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
