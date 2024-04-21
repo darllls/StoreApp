@@ -1,0 +1,171 @@
+﻿@page "/employees"
+@inject IEmployeeService _employeeService
+@inject NavigationManager _nav
+@inject IJSRuntime _js
+
+<_DeleteConfirmation IsParentComponentProcessing="IsProcessing" ConfirmationChanged="ConfirmDelete_Click"></_DeleteConfirmation>
+<div class="row mb-3">
+    <div class="col-md-4">
+        <select class="form-select" @bind="selectedStoreId">
+            <option value="">All Stores</option>
+            @foreach (var store in Stores)
+            {
+                <option value="@store.StoreId">@store.StoreName - @store.CityName, @store.Address</option>
+            }
+        </select>
+    </div>
+    <div class="col-md-4">
+        <input type="text" class="form-control" placeholder="Search..." @bind="searchText" />
+    </div>
+    <div class="col-md-4 text-right">
+        <button class="btn btn-success" @onclick="CreateEmployee">Create</button>
+    </div>
+</div>
+
+@if (IsProcessing)
+{
+    <div style="position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);">
+        <div class="spinner-border" role="status">
+            <span class="visually-hidden">Loading...</span>
+        </div>
+    </div>
+}
+else
+{
+    <table class="table table-bordered">
+        <thead>
+            <tr>
+                <th>First Name</th>
+                <th>Last Name</th>
+                <th>Phone</th>
+                <th>Store</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var employee in FilteredEmployees)
+            {
+                <tr>
+                    <td>@employee.FirstName</td>
+                    <td>@employee.LastName</td>
+                    <td>@employee.Phone</td>
+                    <td>@GetStoreInfo(employee.StoreId)</td>
+                    <td>
+                        <button class="btn btn-primary" @onclick="() => EditEmployee(employee.EmployeeId)">Edit</button>
+                        <button class="btn btn-danger" @onclick="() => DeleteEmployee(employee.EmployeeId)">Delete</button>
+                        <button class="btn btn-link" @onclick="() => ViewOrders(employee.EmployeeId)">View Orders</button>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@code {
+    public bool IsProcessing { get; set; } = false;
+    public IEnumerable<EmployeeDTO> Employees { get; set; } = new List<EmployeeDTO>();
+    public IEnumerable<StoreDTO> Stores { get; set; } = new List<StoreDTO>();
+    public string searchText { get; set; } = "";
+    private int? selectedStoreId { get; set; }
+    private int DeleteEmployeeId { get; set; } = 0;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadEmployees();
+        await LoadStores();
+    }
+
+    private async Task LoadEmployees()
+    {
+        IsProcessing = true;
+        Employees = await _employeeService.GetAllEmployees();
+        IsProcessing = false;
+    }
+
+    private async Task LoadStores()
+    {
+        Stores = await _employeeService.GetAllStores();
+    }
+
+    // public IEnumerable<EmployeeDTO> FilteredEmployees =>
+    //     Employees.Where(e =>
+    //         (string.IsNullOrWhiteSpace(searchText) ||
+    //          e.FirstName.StartsWith(searchText, StringComparison.OrdinalIgnoreCase) ||
+    //          e.LastName.StartsWith(searchText, StringComparison.OrdinalIgnoreCase) ||
+    //          e.Phone.StartsWith(searchText, StringComparison.OrdinalIgnoreCase)) &&
+    //         (selectedStoreId == null || e.StoreId == selectedStoreId));
+
+    public IEnumerable<EmployeeDTO> FilteredEmployees =>
+    Employees.Where(e =>
+    {
+        if (string.IsNullOrWhiteSpace(searchText))
+            return true;
+
+        var searchParts = searchText.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+
+        // Логіка пошуку: присутність кожного знайденого слова в ім'ях або прізвищах
+        foreach (var part in searchParts)
+        {
+            if (e.FirstName.StartsWith(part, StringComparison.OrdinalIgnoreCase) ||
+            e.LastName.StartsWith(part, StringComparison.OrdinalIgnoreCase) ||
+            e.Phone.Contains(searchText, StringComparison.OrdinalIgnoreCase))
+            {
+                return true;
+            }
+        }
+
+        return false;
+    })
+    .Where(e => selectedStoreId == null || e.StoreId == selectedStoreId);
+
+
+    private string GetStoreInfo(int? storeId)
+    {
+        if (storeId.HasValue)
+        {
+            var store = Stores.FirstOrDefault(s => s.StoreId == storeId);
+            if (store != null)
+            {
+                return $"{store.StoreName} - {store.CityName}, {store.Address}";
+            }
+        }
+        return string.Empty;
+    }
+
+    private void CreateEmployee()
+    {
+        // Navigate to create employee page
+        _nav.NavigateTo("/employees/create");
+    }
+
+    private void EditEmployee(int employeeId)
+    {
+        // Navigate to edit employee page
+        _nav.NavigateTo($"/employees/edit/{employeeId}");
+    }
+
+    private async Task DeleteEmployee(int employeeId)
+    {
+        DeleteEmployeeId = employeeId;
+        await _js.InvokeVoidAsync("ShowDeleteConfirmationModal");
+    }
+
+    private async Task ViewOrders(int employeeId)
+    {
+        // Navigate to view orders for employee
+        _nav.NavigateTo($"/employees/orders/{employeeId}");
+    }
+
+    public async Task ConfirmDelete_Click(bool isConfirmed)
+    {
+        IsProcessing = true;
+        if (isConfirmed && DeleteEmployeeId != 0)
+        {
+            await _employeeService.DeleteEmployee(DeleteEmployeeId);
+            await _js.ToastrSuccess("Employee deleted successfully.");
+            await LoadEmployees();
+            await _js.InvokeVoidAsync("HideDeleteConfirmationModal");
+        }
+        IsProcessing = false;
+    }
+}

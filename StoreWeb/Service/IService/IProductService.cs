@@ -1,0 +1,14 @@
+﻿using DTOs;
+
+namespace StoreWeb.Service.IService
+{
+    public interface IProductService
+    {
+        Task<IEnumerable<ProductDTO>> GetAllProducts();
+        Task<ProductDTO> GetProductById(int productId);
+        Task<ProductDTO> CreateProduct(ProductDTO product);
+        Task<ProductDTO> UpdateProduct(int productId, ProductDTO product);
+        Task<bool> DeleteProduct(int productId);
+    }
+
+}

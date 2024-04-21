@@ -1,0 +1,136 @@
+﻿@page "/customers/create"
+@page "/customers/edit/{id:int}"
+
+@inject ICustomerService _customerService
+@inject NavigationManager _navigationManager
+@inject IJSRuntime _jsRuntime
+
+<h3 class="card-title text-primary mb-3 ml-3">@Title Customer</h3>
+
+<div class="col-md-10">
+    @if (IsLoading)
+    {
+        <div style="position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);">
+            <div class="spinner-border" role="status">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+        </div>
+    }
+    else
+    {
+        <EditForm Model="Customer" OnValidSubmit="UpsertCustomer">
+            <DataAnnotationsValidator />
+            <div class="row mb-3">
+                <div class="col-md-6">
+                    <label for="firstName" class="form-label">First Name</label>
+                    <InputText @bind-Value="Customer.FirstName" class="form-control" id="firstName" />
+                    <ValidationMessage For="@(() => Customer.FirstName)" />
+                </div>
+                <div class="col-md-6">
+                    <label for="lastName" class="form-label">Last Name</label>
+                    <InputText @bind-Value="Customer.LastName" class="form-control" id="lastName" />
+                    <ValidationMessage For="@(() => Customer.LastName)" />
+                </div>
+            </div>
+            <div class="row mb-3">
+                <div class="col-md-6">
+                    <label for="email" class="form-label">Email</label>
+                    <InputText type="email" @bind-Value="Customer.Email" class="form-control" id="email" />
+                    <ValidationMessage For="@(() => Customer.Email)" />
+                </div>
+                <div class="col-md-6">
+                    <label for="phone" class="form-label">Phone</label>
+                    <InputText @bind-Value="Customer.Phone" class="form-control" id="phone" />
+                    <ValidationMessage For="@(() => Customer.Phone)" />
+                </div>
+            </div>
+            <div class="row mb-3">
+                <div class="col-md-6">
+                    <label for="customerType" class="form-label">Customer Type</label>
+                    <select class="form-select" @bind="Customer.CustomerTypeId" id="customerType">
+                        <option value="">-- Select Customer Type --</option>
+                        @foreach (var customerType in CustomerTypes)
+                        {
+                            <option value="@customerType.CustomerTypeId">@customerType.TypeName</option>
+                        }
+                    </select>
+                    <ValidationMessage For="@(() => Customer.CustomerTypeId)" />
+                </div>
+            </div>
+            <div class="form-group py-2">
+                <button class="btn btn-primary">@Title</button>
+                <NavLink href="/customers" class="btn btn-secondary">Back</NavLink>
+            </div>
+        </EditForm>
+    }
+</div>
+
+@code {
+    [Parameter]
+    public int Id { get; set; }
+
+    private CustomerDTO Customer { get; set; } = new CustomerDTO();
+    private IEnumerable<CustomerTypeDTO> CustomerTypes { get; set; } = new List<CustomerTypeDTO>();
+    private string Title { get; set; } = "Create";
+
+    public bool IsLoading { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        IsLoading = true;
+        CustomerTypes = await _customerService.GetAllCustomerTypes();
+        if (Id != 0)
+        {
+            Customer = await _customerService.GetCustomerById(Id);
+            Title = "Update";
+        }
+        IsLoading = false;
+    }
+
+    private async Task UpsertCustomer()
+    {
+        if (Customer.CustomerTypeId == null)
+        {
+            await _jsRuntime.ToastrFailure("Please select a customer type.");
+            return;
+        }
+
+        var selectedCustomerType = CustomerTypes.FirstOrDefault(ct => ct.CustomerTypeId == Customer.CustomerTypeId);
+        if (selectedCustomerType != null)
+        {
+            Customer.CustomerTypeName = selectedCustomerType.TypeName;
+        }
+        else
+        {
+            await _jsRuntime.ToastrFailure("Selected customer type not found.");
+            return;
+        }
+
+        if (Id == 0) // Create new customer
+        {
+            var result = await _customerService.CreateCustomer(Customer);
+            if (result != null)
+            {
+                await _jsRuntime.ToastrSuccess("Customer created successfully.");
+                _navigationManager.NavigateTo("/customers");
+            }
+            else
+            {
+                await _jsRuntime.ToastrFailure("Failed to create customer.");
+            }
+        }
+        else // Update existing customer
+        {
+            var result = await _customerService.UpdateCustomer(Id, Customer);
+            if (result != null)
+            {
+                await _jsRuntime.ToastrSuccess("Customer updated successfully.");
+                _navigationManager.NavigateTo("/customers");
+            }
+            else
+            {
+                await _jsRuntime.ToastrFailure("Failed to update customer.");
+            }
+        }
+    }
+}

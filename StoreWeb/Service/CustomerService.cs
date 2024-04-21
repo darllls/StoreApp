@@ -1,6 +1,7 @@
 ﻿using DTOs;
 using Newtonsoft.Json;
 using StoreWeb.Service.IService;
+using System.Text;
 
 namespace StoreWeb.Service
 {
@@ -13,14 +14,31 @@ namespace StoreWeb.Service
             _httpClient = httpClient;
         }
 
-        public Task<CustomerDTO> CreateCustomer(CustomerDTO customerDto)
+        public async Task<CustomerDTO> CreateCustomer(CustomerDTO customerDto)
         {
-            throw new NotImplementedException();
+            var customerJson = JsonConvert.SerializeObject(customerDto);
+            var content = new StringContent(customerJson, Encoding.UTF8, "application/json");
+
+            var response = await _httpClient.PostAsync("/api/customers", content);
+
+            if (!response.IsSuccessStatusCode)
+            {
+                var errorMessage = await response.Content.ReadAsStringAsync();
+                // Log or handle the error message appropriately
+                Console.WriteLine($"Failed to create customer. Error: {errorMessage}");
+                return null; // Or throw an exception based on your error handling strategy
+            }
+
+            var createdCustomerJson = await response.Content.ReadAsStringAsync();
+            var createdCustomer = JsonConvert.DeserializeObject<CustomerDTO>(createdCustomerJson);
+
+            return createdCustomer;
         }
 
-        public Task<bool> DeleteCustomer(int customerId)
+        public async Task<bool> DeleteCustomer(int customerId)
         {
-            throw new NotImplementedException();
+            var response = await _httpClient.DeleteAsync($"/api/customers/{customerId}");
+            return response.IsSuccessStatusCode;
         }
 
         public async Task<List<CustomerDTO>> GetAllCustomers()
@@ -49,14 +67,23 @@ namespace StoreWeb.Service
             return new CustomerDTO();
         }
 
-        public Task<CustomerDTO> UpdateCustomer(int customerId, CustomerDTO customerDto)
+        public async Task<CustomerDTO> UpdateCustomer(int customerId, CustomerDTO customerDto)
         {
-            throw new NotImplementedException();
+            var customerJson = JsonConvert.SerializeObject(customerDto);
+            var content = new StringContent(customerJson, Encoding.UTF8, "application/json");
+
+            var response = await _httpClient.PutAsync($"/api/customers/{customerId}", content);
+            response.EnsureSuccessStatusCode();
+
+            var updatedCustomerJson = await response.Content.ReadAsStringAsync();
+            var updatedCustomer = JsonConvert.DeserializeObject<CustomerDTO>(updatedCustomerJson);
+
+            return updatedCustomer;
         }
 
         public async Task<List<CustomerTypeDTO>> GetAllCustomerTypes()
         {
-            var response = await _httpClient.GetAsync("/api/customertypes"); // Припустимо, що у вас є API endpoint для отримання типів клієнтів
+            var response = await _httpClient.GetAsync("/api/customertypes"); 
             if (response.IsSuccessStatusCode)
             {
                 var content = await response.Content.ReadAsStringAsync();

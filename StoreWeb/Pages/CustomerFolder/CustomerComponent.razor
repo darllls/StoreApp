@@ -1,7 +1,9 @@
 ﻿@page "/customers"
 @inject ICustomerService _customerService
 @inject NavigationManager _nav
+@inject IJSRuntime _js
 
+<_DeleteConfirmation IsParentComponentProcessing="IsProcessing" ConfirmationChanged="ConfirmDelete_Click"></_DeleteConfirmation>
 <div class="row mb-3">
     <div class="col-md-4">
         <select class="form-select" @bind="selectedCustomerTypeId">
@@ -67,8 +69,14 @@ else
     public string searchText { get; set; } = "";
     private int? selectedCustomerTypeId { get; set; }
     public IEnumerable<CustomerTypeDTO> CustomerTypes { get; set; } = new List<CustomerTypeDTO>();
+    private int DeleteCustomerId { get; set; } = 0;
 
     protected override async Task OnInitializedAsync()
+    {
+        await LoadCustomers();
+    }
+
+    private async Task LoadCustomers()
     {
         IsProcessing = true;
         Customers = await _customerService.GetAllCustomers();
@@ -78,39 +86,55 @@ else
 
     public IEnumerable<CustomerDTO> FilteredCustomers =>
     Customers.Where(c =>
-        (string.IsNullOrWhiteSpace(searchText) ||
-            c.FirstName.Contains(searchText, StringComparison.OrdinalIgnoreCase) ||
-            c.LastName.Contains(searchText, StringComparison.OrdinalIgnoreCase) ||
-            c.Email.Contains(searchText, StringComparison.OrdinalIgnoreCase) ||
-            c.Phone.Contains(searchText, StringComparison.OrdinalIgnoreCase)) &&
-        (selectedCustomerTypeId == null || c.CustomerTypeId == selectedCustomerTypeId));
+    {
+        if (string.IsNullOrWhiteSpace(searchText))
+            return true;
+
+        var searchParts = searchText.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+
+        foreach (var part in searchParts)
+        {
+            if (c.FirstName.StartsWith(part, StringComparison.OrdinalIgnoreCase) ||
+            c.LastName.StartsWith(part, StringComparison.OrdinalIgnoreCase) ||
+            c.Email.StartsWith(searchText, StringComparison.OrdinalIgnoreCase) ||
+            c.Phone.Contains(searchText, StringComparison.OrdinalIgnoreCase))
+            {
+                return true;
+            }
+        }
+
+        return false;
+    })
+    .Where(c => selectedCustomerTypeId == null || c.CustomerTypeId == selectedCustomerTypeId);
 
     private void CreateCustomer()
     {
         // Navigate to create customer page
-        _nav.NavigateTo("/create-customer");
+        _nav.NavigateTo("/customers/create");
     }
 
     private void EditCustomer(int customerId)
     {
         // Navigate to edit customer page
-        _nav.NavigateTo($"/edit-customer/{customerId}");
+        _nav.NavigateTo($"/customers/edit/{customerId}");
     }
 
     private async Task DeleteCustomer(int customerId)
     {
-        // var confirmDelete = await JSRuntime.InvokeAsync<bool>("confirm", "Are you sure you want to delete this customer?");
-        // if (confirmDelete)
-        // {
-        //     var result = await _customerService.DeleteCustomer(customerId);
-        //     if (result)
-        //     {
-        //         Customers = Customers.Where(c => c.CustomerId != customerId).ToList();
-        //     }
-        //     else
-        //     {
-        //         // Handle delete failure
-        //     }
-        // }
+        DeleteCustomerId = customerId;
+        await _js.InvokeVoidAsync("ShowDeleteConfirmationModal");
+    }
+
+    public async Task ConfirmDelete_Click(bool isConfirmed)
+    {
+        IsProcessing = true;
+        if (isConfirmed && DeleteCustomerId != 0)
+        {
+            await _customerService.DeleteCustomer(DeleteCustomerId);
+            await _js.ToastrSuccess("Customer deleted successfully.");
+            await LoadCustomers();
+            await _js.InvokeVoidAsync("HideDeleteConfirmationModal");
+        }
+        IsProcessing = false;
     }
 }

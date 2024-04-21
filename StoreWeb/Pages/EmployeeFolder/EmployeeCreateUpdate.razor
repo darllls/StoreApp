@@ -1,0 +1,131 @@
+﻿@page "/employees/create"
+@page "/employees/edit/{id:int}"
+
+@inject IEmployeeService _employeeService
+@inject NavigationManager _navigationManager
+@inject IJSRuntime _jsRuntime
+
+<h3 class="card-title text-primary mb-3 ml-3">@Title Employee</h3>
+
+<div class="col-md-10">
+    @if (IsLoading)
+    {
+        <div style="position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);">
+            <div class="spinner-border" role="status">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+        </div>
+    }
+    else
+    {
+        <EditForm Model="Employee" OnValidSubmit="UpsertEmployee">
+            <DataAnnotationsValidator />
+            <div class="row mb-3">
+                <div class="col-md-6">
+                    <label for="firstName" class="form-label">First Name</label>
+                    <InputText @bind-Value="Employee.FirstName" class="form-control" id="firstName" />
+                    <ValidationMessage For="@(() => Employee.FirstName)" />
+                </div>
+                <div class="col-md-6">
+                    <label for="lastName" class="form-label">Last Name</label>
+                    <InputText @bind-Value="Employee.LastName" class="form-control" id="lastName" />
+                    <ValidationMessage For="@(() => Employee.LastName)" />
+                </div>
+            </div>
+            <div class="row mb-3">
+                <div class="col-md-6">
+                    <label for="phone" class="form-label">Phone</label>
+                    <InputText @bind-Value="Employee.Phone" class="form-control" id="phone" />
+                    <ValidationMessage For="@(() => Employee.Phone)" />
+                </div>
+                <div class="col-md-6">
+                    <label for="storeId" class="form-label">Store</label>
+                    <select class="form-select" @bind="Employee.StoreId" id="storeId">
+                        <option value="">-- Select Store --</option>
+                        @foreach (var store in Stores)
+                        {
+                            <option value="@store.StoreId">@store.StoreName - @store.CityName, @store.Address</option>
+                        }
+                    </select>
+                    <ValidationMessage For="@(() => Employee.StoreId)" />
+                </div>
+            </div>
+            <div class="form-group py-2">
+                <button class="btn btn-primary">@Title</button>
+                <NavLink href="/employees" class="btn btn-secondary">Back</NavLink>
+            </div>
+        </EditForm>
+    }
+</div>
+
+@code {
+    [Parameter]
+    public int Id { get; set; }
+
+    private EmployeeDTO Employee { get; set; } = new EmployeeDTO();
+    private IEnumerable<StoreDTO> Stores { get; set; } = new List<StoreDTO>();
+    private string Title { get; set; } = "Create";
+
+    public bool IsLoading { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        IsLoading = true;
+        Stores = await _employeeService.GetAllStores();
+        if (Id != 0)
+        {
+            Employee = await _employeeService.GetEmployeeById(Id);
+            Title = "Update";
+        }
+        IsLoading = false;
+    }
+
+    private async Task UpsertEmployee()
+    {
+        if (Employee.StoreId == null)
+        {
+            await _jsRuntime.ToastrFailure("Please select a store.");
+            return;
+        }
+
+        var selectedStore = Stores.FirstOrDefault(s => s.StoreId == Employee.StoreId);
+        if (selectedStore != null)
+        {
+            Employee.StoreName = selectedStore.StoreName;
+            Employee.CityName = selectedStore.CityName;
+            // You can optionally set Employee.CityName and other properties based on selectedStore
+        }
+        else
+        {
+            await _jsRuntime.ToastrFailure("Selected store not found.");
+            return;
+        }
+
+        if (Id == 0) // Create new employee
+        {
+            var result = await _employeeService.CreateEmployee(Employee);
+            if (result != null)
+            {
+                await _jsRuntime.ToastrSuccess("Employee created successfully.");
+                _navigationManager.NavigateTo("/employees");
+            }
+            else
+            {
+                await _jsRuntime.ToastrFailure("Failed to create employee.");
+            }
+        }
+        else // Update existing employee
+        {
+            var result = await _employeeService.UpdateEmployee(Id, Employee);
+            if (result != null)
+            {
+                await _jsRuntime.ToastrSuccess("Employee updated successfully.");
+                _navigationManager.NavigateTo("/employees");
+            }
+            else
+            {
+                await _jsRuntime.ToastrFailure("Failed to update employee.");
+            }
+        }
+    }
+}
