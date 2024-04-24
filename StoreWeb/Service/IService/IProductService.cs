@@ -4,7 +4,7 @@ namespace StoreWeb.Service.IService
 {
     public interface IProductService
     {
-        Task<IEnumerable<ProductDTO>> GetAllProducts();
+        Task<List<ProductDTO>> GetAllProducts();
         Task<ProductDTO> GetProductById(int productId);
         Task<ProductDTO> CreateProduct(ProductDTO product);
         Task<ProductDTO> UpdateProduct(int productId, ProductDTO product);

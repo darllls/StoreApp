@@ -1,0 +1,281 @@
+﻿@page "/products/create"
+@page "/products/edit/{id:int}"
+
+@inject IProductService ProductService
+@inject NavigationManager NavigationManager
+@inject IJSRuntime _js
+@inject IEmployeeService _employeeService
+
+<h3 class="card-title text-primary mb-3 ml-3">@Title Product</h3>
+
+<div class="col-md-10">
+    @if (IsLoading)
+    {
+        <div style="position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);">
+            <div class="spinner-border" role="status">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+        </div>
+    }
+    else
+    {
+        <EditForm Model="Product" OnValidSubmit="SaveProduct">
+            <DataAnnotationsValidator />
+            <div class="row mb-3">
+                <div class="col-md-6">
+                    <label for="productName" class="form-label">Product Name</label>
+                    <InputText @bind-Value="Product.ProductName" class="form-control" id="productName" />
+                    <ValidationMessage For="@(() => Product.ProductName)" />
+                </div>
+                <div class="col-md-6">
+                    <label for="price" class="form-label">Price</label>
+                    <InputNumber @bind-Value="Product.Price" class="form-control" id="price" />
+                    <ValidationMessage For="@(() => Product.Price)" />
+                </div>
+            </div>
+            <div class="row mb-3">
+                <div class="col-md-6">
+                    <label for="warrantyMonths" class="form-label">Warranty Months</label>
+                    <InputNumber @bind-Value="Product.WarrantyMonths" class="form-control" id="warrantyMonths" />
+                    <ValidationMessage For="@(() => Product.WarrantyMonths)" />
+                </div>
+                <div class="col-md-6">
+                    <label for="description" class="form-label">Description</label>
+                    <InputText @bind-Value="Product.Description" class="form-control" id="description" />
+                    <ValidationMessage For="@(() => Product.Description)" />
+                </div>
+            </div>
+            <div class="row mb-3">
+                <div class="col-md-6">
+                    <label for="usageInstructions" class="form-label">Usage Instructions</label>
+                    <InputText @bind-Value="Product.UsageInstructions" class="form-control" id="usageInstructions" />
+                    <ValidationMessage For="@(() => Product.UsageInstructions)" />
+                </div>
+                <div class="col-md-6">
+                    <label for="recyclingInfo" class="form-label">Recycling Information</label>
+                    <InputCheckbox @bind-Value="Product.RecyclingInfo" class="form-check-input" id="recyclingInfo" />
+                    <ValidationMessage For="@(() => Product.RecyclingInfo)" />
+                </div>
+            </div>
+            <div class="row mb-3">
+                <div class="col-md-3">
+                    <label for="packageLength" class="form-label">Package Length</label>
+                    <InputNumber @bind-Value="Product.PackageLength" class="form-control" id="packageLength" />
+                    <ValidationMessage For="@(() => Product.PackageLength)" />
+                </div>
+                <div class="col-md-3">
+                    <label for="packageWidth" class="form-label">Package Width</label>
+                    <InputNumber @bind-Value="Product.PackageWidth" class="form-control" id="packageWidth" />
+                    <ValidationMessage For="@(() => Product.PackageWidth)" />
+                </div>
+                <div class="col-md-3">
+                    <label for="packageHeight" class="form-label">Package Height</label>
+                    <InputNumber @bind-Value="Product.PackageHeight" class="form-control" id="packageHeight" />
+                    <ValidationMessage For="@(() => Product.PackageHeight)" />
+                </div>
+                <div class="col-md-3">
+                    <label for="packageWeight" class="form-label">Package Weight</label>
+                    <InputNumber @bind-Value="Product.PackageWeight" class="form-control" id="packageWeight" />
+                    <ValidationMessage For="@(() => Product.PackageWeight)" />
+                </div>
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <label for="attributes" class="form-label">Attributes</label>
+                        @foreach (var attribute in Product.Attributes)
+                        {
+                            <div class="input-group mb-3">
+                                <select class="form-select" @bind="attribute.AttributeName">
+                                    <option value="">-- Select Attribute Name --</option>
+                                    <option value="Color">Color</option>
+                                    <option value="Size">Size</option>
+                                    <option value="Weight">Weight</option>
+                                    <!-- Add more attribute names as needed -->
+                                </select>
+                                <input type="text" class="form-control" @bind="attribute.AttributeValue" />
+                                <button class="btn btn-outline-danger" @onclick="() => RemoveAttribute(attribute)">x</button>
+                            </div>
+                        }
+                        <button class="btn btn-sm btn-primary" @onclick="AddAttribute">Add Attribute</button>
+                    </div>
+                    <div class="col-md-6">
+                        <label for="availableProducts" class="form-label">Available Products</label>
+                        @foreach (var availableProduct in Product.AvailableProducts)
+                        {
+                            <div class="input-group mb-3">
+                                <select class="form-select" @bind="availableProduct.StoreId">
+                                    <option value="">-- Select Store --</option>
+                                    @foreach (var store in Stores)
+                                    {
+                                        <option value="@store.StoreId">@store.StoreName</option>
+                                    }
+                                </select>
+                                <input type="number" class="form-control" @bind="availableProduct.Quantity" />
+                                <button class="btn btn-outline-danger" @onclick="() => RemoveAvailableProduct(availableProduct)">x</button>
+                            </div>
+                        }
+                        <button class="btn btn-sm btn-primary" @onclick="AddAvailableProduct">Add Available Product</button>
+                    </div>
+                </div>
+            </div>
+            <div class="form-group py-2">
+                <button type="submit" class="btn btn-primary">@Title</button>
+                <NavLink href="/products" class="btn btn-secondary">Back</NavLink>
+            </div>
+
+
+        </EditForm>
+    }
+</div>
+
+@code {
+    [Parameter]
+    public int Id { get; set; }
+
+    private ProductDTO Product { get; set; } = new ProductDTO
+        {
+            Attributes = new List<AttributeDTO>(), // Initialize Attributes collection
+            AvailableProducts = new List<AvailableProductDTO>() // Initialize AvailableProducts collection
+        };
+
+    private string Title { get; set; } = "Create";
+    private bool IsLoading { get; set; }
+    private IEnumerable<StoreDTO> Stores { get; set; } = new List<StoreDTO>();
+
+    protected override async Task OnInitializedAsync()
+    {
+        IsLoading = true;
+        Stores = await _employeeService.GetAllStores();
+        if (Id != 0)
+        {
+            Product = await ProductService.GetProductById(Id);
+            Title = "Update";
+        }
+        IsLoading = false;
+    }
+
+        private async Task SaveProduct()
+        {
+            // Perform validation checks
+            if (!ValidateProduct())
+            {
+                return;
+            }
+
+            IsLoading = true;
+
+            try
+            {
+                if (Id == 0)
+                {
+                    // Create new product
+                    var result = await ProductService.CreateProduct(Product);
+                    if (result != null)
+                    {
+                        await _js.ToastrSuccess("Product created successfully.");
+                        NavigationManager.NavigateTo("/products");
+                    }
+                    else
+                    {
+                        await _js.ToastrFailure("Failed to create product.");
+                    }
+                }
+                else
+                {
+                    // Update existing product
+                    var result = await ProductService.UpdateProduct(Id, Product);
+                    if (result != null)
+                    {
+                        await _js.ToastrSuccess("Product updated successfully.");
+                        NavigationManager.NavigateTo("/products");
+                    }
+                    else
+                    {
+                        await _js.ToastrFailure("Failed to update product.");
+                    }
+                }
+            }
+            finally
+            {
+                IsLoading = false;
+            }
+        }
+
+        private bool ValidateProduct()
+        {
+            if (string.IsNullOrWhiteSpace(Product.ProductName))
+            {
+                _js.ToastrFailure("Please enter a product name.");
+                return false;
+            }
+
+            if (Product.Price <= 0)
+            {
+                _js.ToastrFailure("Please enter a valid price.");
+                return false;
+            }
+
+            foreach (var attribute in Product.Attributes)
+            {
+                if (string.IsNullOrEmpty(attribute.AttributeName) || string.IsNullOrEmpty(attribute.AttributeValue))
+                {
+                    _js.ToastrFailure("All attributes must have a name and value.");
+                    return false;
+                }
+            }
+
+            if (Product.PackageLength <= 0 || Product.PackageWidth <= 0 || Product.PackageHeight <= 0)
+            {
+                _js.ToastrFailure("Package dimensions must be greater than zero.");
+                return false;
+            }
+
+            if (!string.IsNullOrEmpty(Product.Description) && Product.Description.Length > 200)
+            {
+                _js.ToastrFailure("Product description must be less than 200 characters.");
+                return false;
+            }
+
+            if (!string.IsNullOrEmpty(Product.UsageInstructions) && Product.UsageInstructions.Length > 200)
+            {
+                _js.ToastrFailure("Product usage instructions must be less than 200 characters.");
+                return false;
+            }
+
+            return true;
+        }
+
+    private void AddAttribute()
+    {
+        if (Product.Attributes == null)
+        {
+            Product.Attributes = new List<AttributeDTO>();
+        }
+        Product.Attributes.Add(new AttributeDTO());
+    }
+
+    private void AddAvailableProduct()
+    {
+        if (Product.AvailableProducts == null)
+        {
+            Product.AvailableProducts = new List<AvailableProductDTO>();
+        }
+        Product.AvailableProducts.Add(new AvailableProductDTO());
+    }
+
+    private void RemoveAttribute(AttributeDTO attribute)
+    {
+        if (Product.Attributes != null)
+        {
+            Product.Attributes.Remove(attribute);
+        }
+    }
+
+    private void RemoveAvailableProduct(AvailableProductDTO availableProduct)
+    {
+        if (Product.AvailableProducts != null)
+        {
+            Product.AvailableProducts.Remove(availableProduct);
+        }
+    }
+
+}

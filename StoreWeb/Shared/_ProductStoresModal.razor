@@ -1,0 +1,42 @@
+﻿<div class="modal fade" data-backdrop="dynamic" data-keyboard="false" id="productStoresModal" tabindex="-1" role="dialog">
+    <div class="modal-dialog  modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLabel">@Product?.ProductName Available Stores</h5>
+            </div>
+            <div class="modal-body">
+                @if (Product != null)
+                {
+                    <div>
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Store Name</th>
+                                    <th>Quantity</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var availableProduct in Product.AvailableProducts)
+                                {
+                                    <tr>
+                                        <td>@availableProduct.StoreName</td>
+                                        <td>@availableProduct.Quantity</td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                }
+                else
+                {
+                    <p>No product selected.</p>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    [Parameter]
+    public ProductDTO? Product { get; set; }
+}

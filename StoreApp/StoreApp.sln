@@ -3,15 +3,15 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.9.34607.119
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "StoreApp", "StoreApp.csproj", "{948332B9-7888-47EF-AE96-7FF64F715947}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "StoreApp", "StoreApp.csproj", "{948332B9-7888-47EF-AE96-7FF64F715947}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DataContext", "..\DataAccess\DataContext.csproj", "{FCAF04E3-3925-4D05-A629-51C21DB39252}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DataContext", "..\DataAccess\DataContext.csproj", "{FCAF04E3-3925-4D05-A629-51C21DB39252}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DTOs", "..\DTOs\DTOs.csproj", "{BEB18540-74D8-4530-A95E-8B9E34D35B34}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DTOs", "..\DTOs\DTOs.csproj", "{BEB18540-74D8-4530-A95E-8B9E34D35B34}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Bussiness", "..\Bussiness\Bussiness.csproj", "{DC399FB2-2A1D-4E9C-9C9E-8A4900CA7EF0}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Bussiness", "..\Bussiness\Bussiness.csproj", "{DC399FB2-2A1D-4E9C-9C9E-8A4900CA7EF0}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "StoreWeb", "..\StoreWeb\StoreWeb.csproj", "{FBA2A512-E5B5-4383-BA28-D6E840616789}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "StoreWeb", "..\StoreWeb\StoreWeb.csproj", "{FBA2A512-E5B5-4383-BA28-D6E840616789}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

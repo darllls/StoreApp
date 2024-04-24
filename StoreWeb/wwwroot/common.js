@@ -4,6 +4,7 @@ window.ShowToastr = (type, message) => {
     }
     if (type === "error") {
         toastr.error(message, "Operation Failed", { timeOut: 5000 });
+        $('#productModal').modal('show');
     }
 }
 
@@ -24,6 +25,22 @@ window.ShowSweetAlert = (type, message) => {
     }
 }
 
+function ShowProductModal() {
+    $('#productDetailsModal').modal('show');
+};
+
+function HideProductModal() {
+    $('#productDetailsModal').modal('hide');
+};
+
+function ShowAvailableProductModal() {
+    $('#productStoresModal').modal('show');
+};
+
+function HideAvailableProductModal() {
+    $('#productStoresModal').modal('hide');
+};
+
 function ShowDeleteConfirmationModal() {
     $('#deleteConfirmationModal').modal('show');
 }
@@ -31,3 +48,4 @@ function ShowDeleteConfirmationModal() {
 function HideDeleteConfirmationModal() {
     $('#deleteConfirmationModal').modal('hide');
 }
+

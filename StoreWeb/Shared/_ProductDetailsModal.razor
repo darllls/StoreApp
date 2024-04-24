@@ -1,0 +1,41 @@
+﻿<div class="modal fade" data-backdrop="dynamic" data-keyboard="false" id="productDetailsModal" tabindex="-1" role="dialog">
+    <div class="modal-dialog  modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLabel">@Product?.ProductName Details</h5>
+            </div>
+            <div class="modal-body">
+                @if (Product != null)
+                 {
+                <div>
+                    <p><strong>Category:</strong> @Product.CategoryName</p>
+                    <p><strong>Brand:</strong> @Product.BrandName</p>
+                    <p><strong>Description:</strong> @Product.Description</p>
+                    <p><strong>Usage Instructions:</strong> @Product.UsageInstructions</p>
+                    <p><strong>Price:</strong> @Product.Price</p>
+                    <p><strong>Warranty Months:</strong> @Product.WarrantyMonths</p>
+                    <p><strong>Is Recyclable?:</strong> @(Product.RecyclingInfo ? "Yes" : "No")</p>
+                    <p><strong>Measurements:</strong> @Product.PackageHeight cm x @Product.PackageLength cm x @Product.PackageWidth cm  - @Product.PackageWeight kg </p>
+
+                    <h5>Attributes:</h5>
+                    <ul>
+                        @foreach (var attribut in Product.Attributes)
+                        {
+                            <li><strong>@attribut.AttributeName:</strong> @attribut.AttributeValue</li>
+                        }
+                    </ul>
+                    </div>
+                }
+                else
+                {
+                    <p>No product selected.</p>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    [Parameter]
+    public ProductDTO? Product { get; set; }
+}

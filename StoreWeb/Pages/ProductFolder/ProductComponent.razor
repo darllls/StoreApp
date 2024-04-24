@@ -1,0 +1,161 @@
+﻿@page "/products"
+@inject IProductService ProductService
+@inject NavigationManager NavigationManager
+@inject IEmployeeService EmployeeService
+@inject IJSRuntime _js
+
+<_DeleteConfirmation IsParentComponentProcessing="IsProcessing" ConfirmationChanged="ConfirmDelete_Click"></_DeleteConfirmation>
+
+<h3>Products</h3>
+
+<div class="row mb-3">
+    
+    <div class="col-md-4">
+        <select class="form-select" @bind="selectedStoreId">
+            <option value="">All Stores</option>
+            @foreach (var store in Stores)
+            {
+                <option value="@store.StoreId">@store.StoreName</option>
+            }
+        </select>
+    </div>
+    <div class="col-md-4">
+        <input type="text" class="form-control" @bind="searchText" placeholder="Search by product name" />
+    </div>
+    <div class="col-md-4">
+        <button class="btn btn-success" @onclick="CreateProduct">Create</button>
+    </div>
+</div>
+
+@if (IsProcessing)
+{
+    <div style="position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);">
+        <div class="spinner-border" role="status">
+            <span class="visually-hidden">Loading...</span>
+        </div>
+    </div>
+}
+else
+{
+    <div class="row">
+        @foreach (var product in FilteredProducts)
+        {
+            <div class="col-md-3 mb-3">
+                <div class="card" style="box-shadow: 0 4px 8px rgba(0,0,0,0.1);">
+                    <div class="card-body">
+                        <h5 class="card-title">@product.ProductName</h5>
+                        <p class="card-text">Price: ₴ @product.Price</p>
+                        <p class="card-text">Brand: @product.BrandName</p>
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                            <button class="btn btn-sm btn-outline-dark" style="flex-grow: 1; width: 100%;"
+                                    @onclick="() => ShowProductDetails(product)">        
+                                Details
+                            </button>
+                            <button class="btn btn-sm btn-outline-dark" style="margin-left: 10px; flex-grow: 1; width: 100%;"
+                                    @onclick="() => ShowAvailableStores(product)">
+                                Stores
+                            </button>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <button class="btn btn-sm btn-primary" style="flex-grow: 1; width: 100%;"
+                                    @onclick="() => UpdateProduct(product.ProductId)">
+                                Edit
+                            </button>
+                            <button class="btn btn-sm btn-danger" style="margin-left: 10px; flex-grow: 1; width: 100%;"
+                                    @onclick="() => DeleteProduct(product.ProductId)">
+                                Delete
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+
+        }
+    </div>
+}
+
+<_ProductDetailsModal Product="selectedProduct"></_ProductDetailsModal>
+<_ProductStoresModal Product="selectedProduct"></_ProductStoresModal>
+
+@code {
+    private IEnumerable<ProductDTO> Products { get; set; } = new List<ProductDTO>();
+    private IEnumerable<StoreDTO> Stores { get; set; } = new List<StoreDTO>();
+    private string searchText { get; set; }
+    private int? selectedStoreId { get; set; }
+    private int selectedProductId;
+    private ProductDTO selectedProduct;
+    public string modalType { get; set; }
+
+    public bool IsProcessing { get; set; } = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadData();
+    }
+
+    private async Task LoadData()
+    {
+        IsProcessing = true;
+        Products = await ProductService.GetAllProducts();
+        Stores = await EmployeeService.GetAllStores();
+        IsProcessing = false;
+    }
+
+    private void CreateProduct()
+    {
+        NavigationManager.NavigateTo("/products/create");
+    }
+
+    private void UpdateProduct(int productId)
+    {
+        NavigationManager.NavigateTo($"/products/update/{productId}");
+    }
+
+    private async Task ShowProductDetails(ProductDTO product)
+    {
+        selectedProduct = product;
+        await _js.InvokeVoidAsync("ShowProductModal");
+    }
+
+    private async Task ShowAvailableStores(ProductDTO product)
+    {
+        selectedProduct = product;
+        await _js.InvokeVoidAsync("ShowAvailableProductModal");
+    }
+
+    private async Task Close_Click(bool isClosed)
+    {
+        IsProcessing = true;
+        if (isClosed)
+        {
+            await _js.InvokeVoidAsync("HideProductModal");
+        }
+        IsProcessing = false;
+    }
+
+    private async Task DeleteProduct(int productId)
+    {
+        selectedProductId = productId;
+        await _js.InvokeVoidAsync("ShowDeleteConfirmationModal");
+    }
+
+    private async Task ConfirmDelete_Click(bool isConfirmed)
+    {
+        IsProcessing = true;
+        if (isConfirmed && selectedProductId != 0)
+        {
+            await ProductService.DeleteProduct(selectedProductId);
+            await _js.ToastrSuccess("Product deleted successfully.");
+            await LoadData();
+        }
+        IsProcessing = false;
+    }
+
+    public IEnumerable<ProductDTO> FilteredProducts =>
+        Products.Where(p =>
+            string.IsNullOrWhiteSpace(searchText) ||
+            p.ProductName.Contains(searchText, StringComparison.OrdinalIgnoreCase)
+        )
+        .Where(p => selectedStoreId == null || p.AvailableProducts.Any(ap => ap.StoreId == selectedStoreId));
+}

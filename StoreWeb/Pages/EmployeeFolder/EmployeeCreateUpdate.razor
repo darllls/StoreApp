@@ -3,7 +3,7 @@
 
 @inject IEmployeeService _employeeService
 @inject NavigationManager _navigationManager
-@inject IJSRuntime _jsRuntime
+@inject IJSRuntime _js
 
 <h3 class="card-title text-primary mb-3 ml-3">@Title Employee</h3>
 
@@ -84,7 +84,7 @@
     {
         if (Employee.StoreId == null)
         {
-            await _jsRuntime.ToastrFailure("Please select a store.");
+            await _js.ToastrFailure("Please select a store.");
             return;
         }
 
@@ -97,7 +97,7 @@
         }
         else
         {
-            await _jsRuntime.ToastrFailure("Selected store not found.");
+            await _js.ToastrFailure("Selected store not found.");
             return;
         }
 
@@ -106,12 +106,12 @@
             var result = await _employeeService.CreateEmployee(Employee);
             if (result != null)
             {
-                await _jsRuntime.ToastrSuccess("Employee created successfully.");
+                await _js.ToastrSuccess("Employee created successfully.");
                 _navigationManager.NavigateTo("/employees");
             }
             else
             {
-                await _jsRuntime.ToastrFailure("Failed to create employee.");
+                await _js.ToastrFailure("Failed to create employee.");
             }
         }
         else // Update existing employee
@@ -119,12 +119,12 @@
             var result = await _employeeService.UpdateEmployee(Id, Employee);
             if (result != null)
             {
-                await _jsRuntime.ToastrSuccess("Employee updated successfully.");
+                await _js.ToastrSuccess("Employee updated successfully.");
                 _navigationManager.NavigateTo("/employees");
             }
             else
             {
-                await _jsRuntime.ToastrFailure("Failed to update employee.");
+                await _js.ToastrFailure("Failed to update employee.");
             }
         }
     }
