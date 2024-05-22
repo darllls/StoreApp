@@ -18,7 +18,9 @@
         <input type="text" class="form-control" placeholder="Search..." @bind="searchText" />
     </div>
     <div class="col-md-4 text-right">
-        <button class="btn btn-success" @onclick="CreateEmployee">Create</button>
+        <button class="btn btn-success" @onclick="CreateEmployee">
+            <span class="material-icons align-content-md-center">add</span> Create
+        </button>
     </div>
 </div>
 
@@ -51,9 +53,15 @@ else
                     <td>@employee.Phone</td>
                     <td>@GetStoreInfo(employee.StoreId)</td>
                     <td>
-                        <button class="btn btn-primary" @onclick="() => EditEmployee(employee.EmployeeId)">Edit</button>
-                        <button class="btn btn-danger" @onclick="() => DeleteEmployee(employee.EmployeeId)">Delete</button>
-                        <button class="btn btn-outline-dark" @onclick="() => ViewOrders(employee.EmployeeId)">View Orders</button>
+                        <button class="btn btn-primary" @onclick="() => EditEmployee(employee.EmployeeId)">
+                            <span class="material-icons">edit</span>
+                        </button>
+                        <button class="btn btn-danger" @onclick="() => DeleteEmployee(employee.EmployeeId)">
+                            <span class="material-icons">delete</span>
+                        </button>
+                        <button class="btn btn-outline-dark" @onclick="() => ViewOrders(employee.EmployeeId)">
+                            <span class="material-icons">visibility</span> View Orders
+                        </button>
                     </td>
                 </tr>
             }

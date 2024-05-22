@@ -52,9 +52,38 @@
                     <ValidationMessage For="@(() => Product.UsageInstructions)" />
                 </div>
                 <div class="col-md-6">
+                    <label for="usageInstructions" class="form-label">Configuration</label>
+                    <InputText @bind-Value="Product.Configuration" class="form-control" id="usageInstructions" />
+                    <ValidationMessage For="@(() => Product.Configuration)" />
+                </div>
+                <div class="col-md-6">
                     <label for="recyclingInfo" class="form-label">Recycling Information</label>
                     <InputCheckbox @bind-Value="Product.RecyclingInfo" class="form-check-input" id="recyclingInfo" />
                     <ValidationMessage For="@(() => Product.RecyclingInfo)" />
+                </div>
+            </div>
+            <div class="row mb-3">
+                <div class="col-md-6">
+                    <label for="brandId" class="form-label">Brand</label>
+                    <select class="form-select" @bind="Product.BrandId" id="brandId">
+                        <option value="">-- Select Brand --</option>
+                        @foreach (var brand in Brands)
+                        {
+                            <option value="@brand.BrandId">@brand.BrandName</option>
+                        }
+                    </select>
+                    <ValidationMessage For="@(() => Product.BrandId)" />
+                </div>
+                <div class="col-md-6">
+                    <label for="categoryId" class="form-label">Category</label>
+                    <select class="form-select" @bind="Product.ProductCategoryId" id="categoryId">
+                        <option value="">-- Select Category --</option>
+                        @foreach (var category in Categories)
+                        {
+                            <option value="@category.CategoryId">@category.CategoryName</option>
+                        }
+                    </select>
+                    <ValidationMessage For="@(() => Product.ProductCategoryId)" />
                 </div>
             </div>
             <div class="row mb-3">
@@ -88,7 +117,7 @@
                                     <option value="">-- Select Attribute Name --</option>
                                     <option value="Color">Color</option>
                                     <option value="Size">Size</option>
-                                    <option value="Weight">Weight</option>
+                                    <option value="Weight">Material</option>
                                     <!-- Add more attribute names as needed -->
                                 </select>
                                 <input type="text" class="form-control" @bind="attribute.AttributeValue" />
@@ -140,11 +169,15 @@
     private string Title { get; set; } = "Create";
     private bool IsLoading { get; set; }
     private IEnumerable<StoreDTO> Stores { get; set; } = new List<StoreDTO>();
+    private IEnumerable<BrandDTO> Brands { get; set; } = new List<BrandDTO>();
+    private IEnumerable<CategoryDTO> Categories { get; set; } = new List<CategoryDTO>();
 
     protected override async Task OnInitializedAsync()
     {
         IsLoading = true;
         Stores = await _employeeService.GetAllStores();
+        Brands = await ProductService.GetAllBrands();
+        Categories = await ProductService.GetAllCategories();
         if (Id != 0)
         {
             Product = await ProductService.GetProductById(Id);
@@ -162,6 +195,13 @@
             }
 
             IsLoading = true;
+
+            Product.BrandName = Brands.FirstOrDefault(b => b.BrandId == Product.BrandId)?.BrandName;
+            Product.CategoryName = Categories.FirstOrDefault(c => c.CategoryId == Product.ProductCategoryId)?.CategoryName;
+            foreach (var availableProduct in Product.AvailableProducts)
+            {
+                availableProduct.StoreName = Stores.FirstOrDefault(s => s.StoreId == availableProduct.StoreId)?.StoreName;
+            }
 
             try
             {

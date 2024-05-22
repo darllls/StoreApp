@@ -80,5 +80,31 @@ namespace StoreWeb.Service
 
             return updatedProduct;
         }
+
+        public async Task<List<BrandDTO>> GetAllBrands()
+        {
+            var response = await _httpClient.GetAsync("/api/brands");
+            if (response.IsSuccessStatusCode)
+            {
+                var content = await response.Content.ReadAsStringAsync();
+                var brands = JsonConvert.DeserializeObject<List<BrandDTO>>(content);
+                return brands;
+            }
+
+            return new List<BrandDTO>();
+        }
+
+        public async Task<List<CategoryDTO>> GetAllCategories()
+        {
+            var response = await _httpClient.GetAsync("/api/categories");
+            if (response.IsSuccessStatusCode)
+            {
+                var content = await response.Content.ReadAsStringAsync();
+                var categories = JsonConvert.DeserializeObject<List<CategoryDTO>>(content);
+                return categories;
+            }
+
+            return new List<CategoryDTO>();
+        }
     }
 }

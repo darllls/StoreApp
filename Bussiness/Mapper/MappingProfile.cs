@@ -14,6 +14,8 @@ namespace Bussiness.Mapper
         public MappingProfile()
         {
             CreateMap<Store, StoreDTO>().ReverseMap();
+            CreateMap<Brand, BrandDTO>().ReverseMap();
+            CreateMap<ProductCategory, CategoryDTO>().ReverseMap();
             CreateMap<CustomerType, CustomerTypeDTO>().ReverseMap();
             CreateMap<Customer, CustomerDTO>()
                 .ForMember(dest => dest.CustomerTypeName, opt => opt.MapFrom(src => src.CustomerType.TypeName))

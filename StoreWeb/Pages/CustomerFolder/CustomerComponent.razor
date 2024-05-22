@@ -18,7 +18,9 @@
         <input type="text" class="form-control" placeholder="Search..." @bind="searchText" />
     </div>
     <div class="col-md-4 text-right">
-        <button class="btn btn-success" @onclick="CreateCustomer">Create</button>
+        <button class="btn btn-success" @onclick="CreateCustomer">
+            <span class="material-icons">add</span> Create
+        </button>
     </div>
 </div>
 
@@ -40,7 +42,7 @@ else
                 <th>Email</th>
                 <th>Phone</th>
                 <th>Type</th>
-                <th></th>
+                <th>Actions</th>
             </tr>
         </thead>
         <tbody>
@@ -53,9 +55,15 @@ else
                     <td>@customer.Phone</td>
                     <td>@customer.CustomerTypeName</td>
                     <td>
-                        <button class="btn btn-primary" @onclick="() => EditCustomer(customer.CustomerId)">Edit</button>
-                        <button class="btn btn-danger " @onclick="() => DeleteCustomer(customer.CustomerId)">Delete</button>
-                        <button class="btn btn-outline-dark " @onclick="() => DeleteCustomer(customer.CustomerId)">View Orders</button>
+                        <button class="btn btn-primary" @onclick="() => EditCustomer(customer.CustomerId)">
+                            <span class="material-icons">edit</span>
+                        </button>
+                        <button class="btn btn-danger" @onclick="() => DeleteCustomer(customer.CustomerId)">
+                            <span class="material-icons">delete</span>
+                        </button>
+                        <button class="btn btn-outline-dark" @onclick="() => ViewOrders(customer.CustomerId)">
+                            <span class="material-icons">visibility</span> View Orders
+                        </button>
                     </td>
                 </tr>
             }
@@ -85,37 +93,35 @@ else
     }
 
     public IEnumerable<CustomerDTO> FilteredCustomers =>
-    Customers.Where(c =>
-    {
-        if (string.IsNullOrWhiteSpace(searchText))
-            return true;
-
-        var searchParts = searchText.Split(' ', StringSplitOptions.RemoveEmptyEntries);
-
-        foreach (var part in searchParts)
+        Customers.Where(c =>
         {
-            if (c.FirstName.StartsWith(part, StringComparison.OrdinalIgnoreCase) ||
-            c.LastName.StartsWith(part, StringComparison.OrdinalIgnoreCase) ||
-            c.Email.StartsWith(searchText, StringComparison.OrdinalIgnoreCase) ||
-            c.Phone.Contains(searchText, StringComparison.OrdinalIgnoreCase))
-            {
+            if (string.IsNullOrWhiteSpace(searchText))
                 return true;
-            }
-        }
 
-        return false;
-    })
-    .Where(c => selectedCustomerTypeId == null || c.CustomerTypeId == selectedCustomerTypeId);
+            var searchParts = searchText.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+
+            foreach (var part in searchParts)
+            {
+                if (c.FirstName.StartsWith(part, StringComparison.OrdinalIgnoreCase) ||
+                    c.LastName.StartsWith(part, StringComparison.OrdinalIgnoreCase) ||
+                    c.Email.StartsWith(searchText, StringComparison.OrdinalIgnoreCase) ||
+                    c.Phone.Contains(searchText, StringComparison.OrdinalIgnoreCase))
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        })
+        .Where(c => selectedCustomerTypeId == null || c.CustomerTypeId == selectedCustomerTypeId);
 
     private void CreateCustomer()
     {
-        // Navigate to create customer page
         _nav.NavigateTo("/customers/create");
     }
 
     private void EditCustomer(int customerId)
     {
-        // Navigate to edit customer page
         _nav.NavigateTo($"/customers/edit/{customerId}");
     }
 
@@ -136,5 +142,11 @@ else
             await _js.InvokeVoidAsync("HideDeleteConfirmationModal");
         }
         IsProcessing = false;
+    }
+
+    private void ViewOrders(int customerId)
+    {
+        // Navigate to view orders page
+        _nav.NavigateTo($"/customers/orders/{customerId}");
     }
 }

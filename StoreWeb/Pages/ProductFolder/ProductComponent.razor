@@ -23,7 +23,9 @@
         <input type="text" class="form-control" @bind="searchText" placeholder="Search by product name" />
     </div>
     <div class="col-md-4">
-        <button class="btn btn-success" @onclick="CreateProduct">Create</button>
+        <button class="btn btn-success" @onclick="CreateProduct">
+            <span class="material-icons align-content-md-center">add</span> Create
+        </button>
     </div>
 </div>
 
@@ -148,6 +150,7 @@ else
             await ProductService.DeleteProduct(selectedProductId);
             await _js.ToastrSuccess("Product deleted successfully.");
             await LoadData();
+            await _js.InvokeVoidAsync("HideDeleteConfirmationModal");
         }
         IsProcessing = false;
     }
