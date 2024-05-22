@@ -15,7 +15,7 @@
             <option value="">All Stores</option>
             @foreach (var store in Stores)
             {
-                <option value="@store.StoreId">@store.StoreName</option>
+                <option value="@store.StoreId">@store.StoreName - @store.CityName</option>
             }
         </select>
     </div>
@@ -78,7 +78,8 @@ else
 }
 
 <_ProductDetailsModal Product="selectedProduct"></_ProductDetailsModal>
-<_ProductStoresModal Product="selectedProduct"></_ProductStoresModal>
+<_ProductStoresModal Product="selectedProduct" Stores="Stores"></_ProductStoresModal>
+
 
 @code {
     private IEnumerable<ProductDTO> Products { get; set; } = new List<ProductDTO>();

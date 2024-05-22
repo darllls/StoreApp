@@ -5,19 +5,28 @@
 
 <_DeleteConfirmation IsParentComponentProcessing="IsProcessing" ConfirmationChanged="ConfirmDelete_Click"></_DeleteConfirmation>
 <div class="row mb-3">
-    <div class="col-md-4">
-        <select class="form-select" @bind="selectedStoreId">
-            <option value="">All Stores</option>
-            @foreach (var store in Stores)
+    <div class="col-md-3">
+        <select class="form-select" @bind="selectedCityName">
+            <option value="">All Cities</option>
+            @foreach (var cityName in GetUniqueCityNames())
             {
-                <option value="@store.StoreId">@store.StoreName - @store.CityName, @store.Address</option>
+                <option value="@cityName">@cityName</option>
             }
         </select>
     </div>
-    <div class="col-md-4">
+    <div class="col-md-3">
+        <select class="form-select" @bind="selectedStoreId">
+            <option value="">All Stores</option>
+            @foreach (var store in GetFilteredStores())
+            {
+                <option value="@store.StoreId">@store.StoreName - @store.CityName</option>
+            }
+        </select>
+    </div>
+    <div class="col-md-3">
         <input type="text" class="form-control" placeholder="Search..." @bind="searchText" />
     </div>
-    <div class="col-md-4 text-right">
+    <div class="col-md-3 text-right">
         <button class="btn btn-success" @onclick="CreateEmployee">
             <span class="material-icons align-content-md-center">add</span> Create
         </button>
@@ -76,6 +85,24 @@ else
     public string searchText { get; set; } = "";
     private int? selectedStoreId { get; set; }
     private int DeleteEmployeeId { get; set; } = 0;
+    private string selectedCityName { get; set; }
+
+    private IEnumerable<string> GetUniqueCityNames()
+    {
+        return Stores.Select(s => s.CityName).Distinct();
+    }
+
+    private IEnumerable<StoreDTO> GetFilteredStores()
+    {
+        if (string.IsNullOrEmpty(selectedCityName))
+        {
+            return Stores;
+        }
+        else
+        {
+            return Stores.Where(s => s.CityName == selectedCityName);
+        }
+    }
 
     protected override async Task OnInitializedAsync()
     {
@@ -95,14 +122,6 @@ else
         Stores = await _employeeService.GetAllStores();
     }
 
-    // public IEnumerable<EmployeeDTO> FilteredEmployees =>
-    //     Employees.Where(e =>
-    //         (string.IsNullOrWhiteSpace(searchText) ||
-    //          e.FirstName.StartsWith(searchText, StringComparison.OrdinalIgnoreCase) ||
-    //          e.LastName.StartsWith(searchText, StringComparison.OrdinalIgnoreCase) ||
-    //          e.Phone.StartsWith(searchText, StringComparison.OrdinalIgnoreCase)) &&
-    //         (selectedStoreId == null || e.StoreId == selectedStoreId));
-
     public IEnumerable<EmployeeDTO> FilteredEmployees =>
     Employees.Where(e =>
     {
@@ -111,7 +130,7 @@ else
 
         var searchParts = searchText.Split(' ', StringSplitOptions.RemoveEmptyEntries);
 
-        // Логіка пошуку: присутність кожного знайденого слова в ім'ях або прізвищах
+        // Search logic: presence of each found word in first names or last names
         foreach (var part in searchParts)
         {
             if (e.FirstName.StartsWith(part, StringComparison.OrdinalIgnoreCase) ||
@@ -124,7 +143,10 @@ else
 
         return false;
     })
-    .Where(e => selectedStoreId == null || e.StoreId == selectedStoreId);
+    .Where(e =>
+        (string.IsNullOrEmpty(selectedCityName) || Stores.Any(s => s.CityName == selectedCityName && s.StoreId == e.StoreId)) &&
+        (selectedStoreId == null || e.StoreId == selectedStoreId));
+
 
 
     private string GetStoreInfo(int? storeId)
