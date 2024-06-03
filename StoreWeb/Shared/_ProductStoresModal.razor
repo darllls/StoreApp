@@ -14,7 +14,8 @@
                             <ul>
                                 @foreach (var store in cityGroup)
                                 {
-                                    <li>@store.StoreName - @store.Address</li>
+                                    var availableProduct = Product.AvailableProducts.FirstOrDefault(ap => ap.StoreId == store.StoreId);
+                                    <li>@store.StoreName - @availableProduct?.Quantity</li>
                                 }
                             </ul>
                         }

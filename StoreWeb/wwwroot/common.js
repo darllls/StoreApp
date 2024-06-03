@@ -33,6 +33,14 @@ function HideProductModal() {
     $('#productDetailsModal').modal('hide');
 };
 
+function ShowOrderModal() {
+    $('#orderItemsModal').modal('show');
+};
+
+function HideOrderModal() {
+    $('orderItemsModal').modal('hide');
+};
+
 function ShowAvailableProductModal() {
     $('#productStoresModal').modal('show');
 };

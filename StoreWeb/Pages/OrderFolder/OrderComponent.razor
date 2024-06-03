@@ -1,0 +1,114 @@
+﻿@page "/orders"
+@inject IOrderService OrderService
+@inject NavigationManager NavigationManager
+@inject IJSRuntime _js
+
+<_DeleteConfirmation IsParentComponentProcessing="IsProcessing" ConfirmationChanged="ConfirmDelete_Click"></_DeleteConfirmation>
+
+<h3>Orders</h3>
+<button class="btn btn-success mb-3" @onclick="CreateOrder">Create Order</button>
+
+@if (IsProcessing)
+{
+    <div style="position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);">
+        <div class="spinner-border" role="status">
+            <span class="visually-hidden">Loading...</span>
+        </div>
+    </div>
+}
+else
+{
+    
+    <table class="table table-bordered">
+        <thead>
+            <tr>
+                <th>Order Number</th>
+                <th>Customer Name</th>
+                <th>Employee Name</th>
+                <th>Store Name</th>
+                <th>City</th>
+                <th>Total Amount (UAH)</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var order in Orders)
+            {
+                <tr>
+                    <td>@order.Number</td>
+                    <td>@order.CustomerName</td>
+                    <td>@order.EmployeeName</td>
+                    <td>@order.StoreName</td>
+                    <td>@order.CityName</td>
+                    <td>@order.TotalAmount</td>
+                    <td>
+                        <button class="btn btn-outline-dark" @onclick="() => ViewOrderItems(order.OrderId)">
+                            <span class="material-icons">visibility</span> View Items
+                        </button>
+                        <button class="btn btn-primary" @onclick="() => UpdateOrder(order.OrderId)">
+                            <span class="material-icons">edit</span>
+                        </button>
+                        <button class="btn btn-danger" @onclick="() => DeleteOrder(order.OrderId)">
+                            <span class="material-icons">delete</span>
+                        </button>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+<_OrderItemsModal OrderId="SelectedOrderId"></_OrderItemsModal>
+
+@code {
+    private List<OrderDTO> Orders { get; set; } = new List<OrderDTO>();
+    private bool IsProcessing { get; set; }
+    private int SelectedOrderId { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadOrders();
+    }
+
+    private async Task LoadOrders()
+    {
+        IsProcessing = true;
+        Orders = await OrderService.GetAllOrders();
+        IsProcessing = false;
+    }
+
+    private void CreateOrder()
+    {
+        NavigationManager.NavigateTo("/orders/create");
+    }
+
+    private void UpdateOrder(int orderId)
+    {
+        NavigationManager.NavigateTo($"/orders/edit/{orderId}");
+    }
+
+    private async Task DeleteOrder(int orderId)
+    {
+        SelectedOrderId = orderId;
+        await _js.InvokeVoidAsync("ShowDeleteConfirmationModal");
+    }
+
+    private async Task ConfirmDelete_Click(bool isConfirmed)
+    {
+        IsProcessing = true;
+        if (isConfirmed && SelectedOrderId != 0)
+        {
+            await OrderService.DeleteOrder(SelectedOrderId);
+            await _js.ToastrSuccess("Order deleted successfully.");
+            await LoadOrders();
+            await _js.InvokeVoidAsync("HideDeleteConfirmationModal");
+        }
+        IsProcessing = false;
+    }
+
+    private async Task ViewOrderItems(int orderId)
+    {
+        SelectedOrderId = orderId;
+        await _js.InvokeVoidAsync("ShowOrderModal");
+    }
+}

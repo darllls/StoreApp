@@ -43,6 +43,18 @@ namespace Bussiness.Mapper
             CreateMap<AttributeDTO, DataContext.Models.Attribute>()
                 .ForMember(dest => dest.AttributeName, opt => opt.MapFrom(src => src.AttributeName))
                 .ReverseMap();
+
+            CreateMap<Order, OrderDTO>()
+                .ForMember(dest => dest.CustomerName, opt => opt.MapFrom(src => src.Customer != null ? $"{src.Customer.FirstName} {src.Customer.LastName}" : null))
+                .ForMember(dest => dest.EmployeeName, opt => opt.MapFrom(src => src.Employee != null ? $"{src.Employee.FirstName} {src.Employee.LastName}" : null))
+                .ForMember(dest => dest.StoreName, opt => opt.MapFrom(src => src.Employee != null && src.Employee.Store != null ? src.Employee.Store.StoreName : null))
+                .ForMember(dest => dest.CityName, opt => opt.MapFrom(src => src.Employee != null && src.Employee.Store != null && src.Employee.Store.City != null ? src.Employee.Store.City.Name : null))
+                .ForMember(dest => dest.OrderItems, opt => opt.MapFrom(src => src.OrderItems))
+                .ReverseMap();
+
+            CreateMap<OrderItem, OrderItemDTO>()
+                .ForMember(dest => dest.ProductName, opt => opt.MapFrom(src => src.AvailableProduct != null && src.AvailableProduct.Product != null ? src.AvailableProduct.Product.ProductName : null))
+                .ReverseMap();
         }
     }
 }
