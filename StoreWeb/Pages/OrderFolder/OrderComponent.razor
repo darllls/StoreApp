@@ -2,11 +2,32 @@
 @inject IOrderService OrderService
 @inject NavigationManager NavigationManager
 @inject IJSRuntime _js
+@inject NavigationManager navigationManager
 
 <_DeleteConfirmation IsParentComponentProcessing="IsProcessing" ConfirmationChanged="ConfirmDelete_Click"></_DeleteConfirmation>
 
 <h3>Orders</h3>
-<button class="btn btn-success mb-3" @onclick="CreateOrder">Create Order</button>
+
+
+<div class="row mb-3">
+    <div class="col-md-3">
+        <select class="form-select" @bind="selectedStoreName">
+            <option value="">All Stores</option>
+            @foreach (var storeName in GetUniqueStoreNames())
+            {
+                <option value="@storeName">@storeName</option>
+            }
+        </select>
+    </div>
+    <div class="col-md-3">
+        <input type="text" class="form-control" placeholder="Search..." @bind="searchText" />
+    </div>
+    <div class="col-md-3">
+        <button class="btn btn-success mb-3" @onclick="CreateOrder">Create Order</button>
+    </div>
+</div>
+
+
 
 @if (IsProcessing)
 {
@@ -18,7 +39,6 @@
 }
 else
 {
-    
     <table class="table table-bordered">
         <thead>
             <tr>
@@ -27,12 +47,12 @@ else
                 <th>Employee Name</th>
                 <th>Store Name</th>
                 <th>City</th>
-                <th>Total Amount (UAH)</th>
+                <th>Total Amount</th>
                 <th>Actions</th>
             </tr>
         </thead>
         <tbody>
-            @foreach (var order in Orders)
+            @foreach (var order in FilteredOrders)
             {
                 <tr>
                     <td>@order.Number</td>
@@ -40,7 +60,7 @@ else
                     <td>@order.EmployeeName</td>
                     <td>@order.StoreName</td>
                     <td>@order.CityName</td>
-                    <td>@order.TotalAmount</td>
+                    <td>₴ @order.TotalAmount</td>
                     <td>
                         <button class="btn btn-outline-dark" @onclick="() => ViewOrderItems(order.OrderId)">
                             <span class="material-icons">visibility</span> View Items
@@ -64,9 +84,17 @@ else
     private List<OrderDTO> Orders { get; set; } = new List<OrderDTO>();
     private bool IsProcessing { get; set; }
     private int SelectedOrderId { get; set; }
+    private string searchText { get; set; } = "";
+    private string selectedStoreName { get; set; } = "";
 
     protected override async Task OnInitializedAsync()
     {
+        var uri = navigationManager.ToAbsoluteUri(navigationManager.Uri);
+        if (uri.Query.Contains("search"))
+        {
+            var query = System.Web.HttpUtility.ParseQueryString(uri.Query);
+            searchText = query["search"];
+        }
         await LoadOrders();
     }
 
@@ -76,6 +104,20 @@ else
         Orders = await OrderService.GetAllOrders();
         IsProcessing = false;
     }
+
+    private IEnumerable<string> GetUniqueStoreNames()
+    {
+        return Orders.Select(o => o.StoreName).Distinct();
+    }
+
+    private IEnumerable<OrderDTO> FilteredOrders =>
+        Orders.Where(o =>
+            (string.IsNullOrEmpty(selectedStoreName) || o.StoreName == selectedStoreName) &&
+            (string.IsNullOrEmpty(searchText) ||
+             o.CustomerName.Contains(searchText, StringComparison.OrdinalIgnoreCase) ||
+             o.EmployeeName.Contains(searchText, StringComparison.OrdinalIgnoreCase) ||
+             o.CityName.Contains(searchText, StringComparison.OrdinalIgnoreCase) ||
+             o.Number.Contains(searchText, StringComparison.OrdinalIgnoreCase)));
 
     private void CreateOrder()
     {

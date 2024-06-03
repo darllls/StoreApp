@@ -71,7 +71,7 @@ else
                         <button class="btn btn-danger" @onclick="() => DeleteEmployee(employee.EmployeeId)">
                             <span class="material-icons">delete</span>
                         </button>
-                        <button class="btn btn-outline-dark" @onclick="() => ViewOrders(employee.EmployeeId)">
+                        <button class="btn btn-outline-dark" @onclick="() => ViewOrders(employee)">
                             <span class="material-icons">visibility</span> View Orders
                         </button>
                     </td>
@@ -150,8 +150,6 @@ else
         (string.IsNullOrEmpty(selectedCityName) || Stores.Any(s => s.CityName == selectedCityName && s.StoreId == e.StoreId)) &&
         (selectedStoreId == null || e.StoreId == selectedStoreId));
 
-
-
     private string GetStoreInfo(int? storeId)
     {
         if (storeId.HasValue)
@@ -183,10 +181,10 @@ else
         await _js.InvokeVoidAsync("ShowDeleteConfirmationModal");
     }
 
-    private async Task ViewOrders(int employeeId)
+    private void ViewOrders(EmployeeDTO employee)
     {
-        // Navigate to view orders for employee
-        _nav.NavigateTo($"/employees/orders/{employeeId}");
+        // Navigate to view orders for employee with the employee's name as a search query
+        _nav.NavigateTo($"/orders?search={employee.FirstName} {employee.LastName}");
     }
 
     public async Task ConfirmDelete_Click(bool isConfirmed)
