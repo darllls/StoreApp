@@ -1,5 +1,202 @@
-﻿<h3>OrderCreateUpdate</h3>
+﻿@page "/orders/create"
+@page "/orders/edit/{Id:int}"
+
+@inject IOrderService OrderService
+@inject ICustomerService CustomerService
+@inject IEmployeeService EmployeeService
+@inject NavigationManager NavigationManager
+@inject IJSRuntime Js
+
+<h3 class="card-title text-primary mb-3 ml-3">@Title Order</h3>
+
+<div class="col-md-10">
+    @if (IsLoading)
+    {
+        <div style="position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);">
+            <div class="spinner-border" role="status">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+        </div>
+    }
+    else
+    {
+        <EditForm Model="Order" OnValidSubmit="SaveOrder">
+            <DataAnnotationsValidator />
+            <div class="row mb-3">
+                <div class="col-md-6">
+                    <label for="orderNumber" class="form-label">Order Number</label>
+                    <InputText @bind-Value="Order.Number" class="form-control" id="orderNumber" />
+                    <ValidationMessage For="@(() => Order.Number)" />
+                </div>
+                <div class="col-md-6">
+                    <label for="customerName" class="form-label">Customer</label>
+                    <select class="form-select" @bind="Order.CustomerName" id="customerName">
+                        <option value="">-- Select Customer --</option>
+                        @foreach (var customer in Customers)
+                        {
+                            <option value="@($"{customer.FirstName} {customer.LastName}")">@($"{customer.FirstName} {customer.LastName}")</option>
+                        }
+                    </select>
+                    <ValidationMessage For="@(() => Order.CustomerName)" />
+                </div>
+                </div>
+                <div class="row mb-3">
+                <div class="col-md-6">
+                    <label for="employeeName" class="form-label">Employee</label>
+                    <select class="form-select" @onchange="HandleEmployeeChange" id="employeeName">
+                        <option value="">-- Select Employee --</option>
+                        @foreach (var employee in Employees)
+                        {
+                            <option value="@($"{employee.FirstName} {employee.LastName}")">@($"{employee.FirstName} {employee.LastName}")</option>
+                        }
+                    </select>
+                    <ValidationMessage For="@(() => Order.EmployeeName)" />
+                </div>
+                <div class="col-md-6">
+                    <label for="orderDate" class="form-label">Order Date</label>
+                    <InputDate @bind-Value="Order.OrderDate" class="form-control" id="orderDate" StartDate="@DateTime.Today" />
+                    <ValidationMessage For="@(() => Order.OrderDate)" />
+                </div>
+            </div>
+            <div class="row mb-3">
+                <div class="col-md-12">
+                    <label for="orderItems" class="form-label">Order Items</label>
+                    @foreach (var item in Order.OrderItems)
+                    {
+                        <div class="input-group mb-3">
+                            <select class="form-select" @bind="item.ProductName">
+                                <option value="">-- Select Product --</option>
+                                @foreach (var product in AvailableProducts)
+                                {
+                                    <option value="@product.ProductName">@product.ProductName</option>
+                                }
+                            </select>
+                            <InputNumber @bind-Value="item.Amount" class="form-control" />
+                            <button class="btn btn-outline-danger" @onclick="() => RemoveOrderItem(item)">x</button>
+                        </div>
+                    }
+                    <button class="btn btn-sm btn-primary" @onclick="AddOrderItem">Add Order Item</button>
+                </div>
+            </div>
+
+            <div class="form-group py-2">
+                <button type="submit" class="btn btn-primary">@Title</button>
+                <NavLink href="/orders" class="btn btn-secondary">Back</NavLink>
+            </div>
+        </EditForm>
+    }
+</div>
 
 @code {
+    [Parameter]
+    public int Id { get; set; }
 
+    private OrderDTO Order { get; set; } = new OrderDTO();
+    private string Title { get; set; } = "Create";
+    private bool IsLoading { get; set; }
+    private IEnumerable<CustomerDTO> Customers { get; set; } = new List<CustomerDTO>();
+    private IEnumerable<EmployeeDTO> Employees { get; set; } = new List<EmployeeDTO>();
+    private IEnumerable<AvailableProductDTO> AvailableProducts { get; set; } = new List<AvailableProductDTO>();
+
+    private string SelectedEmployeeName { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        IsLoading = true;
+        Customers = await CustomerService.GetAllCustomers();
+        Employees = await EmployeeService.GetAllEmployees();
+        if (Id != 0)
+        {
+            Order = await OrderService.GetOrderById(Id);
+            Title = "Update";
+            SelectedEmployeeName = Order.EmployeeName;
+            await LoadAvailableProducts();
+        }
+        IsLoading = false;
+    }
+
+    private async Task SaveOrder()
+    {
+        if (!await OrderService.IsOrderNumberUnique(Order.Number))
+        {
+            await Js.ToastrFailure("Order number already exists. Please use a different number.");
+            return;
+        }
+
+        IsLoading = true;
+        var selectedEmployee = Employees.FirstOrDefault(emp => $"{emp.FirstName} {emp.LastName}" == Order.EmployeeName);
+        if (selectedEmployee != null)
+        {
+            Order.StoreName = selectedEmployee.StoreName;
+            Order.CityName = selectedEmployee.CityName;
+            // You can optionally set Employee.CityName and other properties based on selectedStore
+        }
+        try
+        {
+            if (Id == 0)
+            {
+                var result = await OrderService.CreateOrder(Order);
+                if (result != null)
+                {
+                    await Js.ToastrSuccess("Order created successfully.");
+                    NavigationManager.NavigateTo("/orders");
+                }
+                else
+                {
+                    await Js.ToastrFailure("Failed to create order.");
+                }
+            }
+            else
+            {
+                var result = await OrderService.UpdateOrder(Id, Order);
+                if (result != null)
+                {
+                    await Js.ToastrSuccess("Order updated successfully.");
+                    NavigationManager.NavigateTo("/orders");
+                }
+                else
+                {
+                    await Js.ToastrFailure("Failed to update order.");
+                }
+            }
+        }
+        finally
+        {
+            IsLoading = false;
+        }
+    }
+
+    private void AddOrderItem()
+    {
+        if (Order.OrderItems == null)
+        {
+            Order.OrderItems = new List<OrderItemDTO>();
+        }
+        Order.OrderItems.Add(new OrderItemDTO());
+    }
+
+    private void RemoveOrderItem(OrderItemDTO item)
+    {
+        if (Order.OrderItems != null)
+        {
+            Order.OrderItems.Remove(item);
+        }
+    }
+
+    private async Task HandleEmployeeChange(ChangeEventArgs e)
+    {
+        SelectedEmployeeName = e.Value.ToString();
+        Order.EmployeeName = SelectedEmployeeName;
+        await LoadAvailableProducts();
+    }
+
+    private async Task LoadAvailableProducts()
+    {
+        var selectedEmployee = Employees.FirstOrDefault(emp => $"{emp.FirstName} {emp.LastName}" == SelectedEmployeeName);
+        if (selectedEmployee != null)
+        {
+            AvailableProducts = await OrderService.GetAvailableProductsForEmployee(selectedEmployee.EmployeeId);
+            StateHasChanged(); // Force re-render
+        }
+    }
 }

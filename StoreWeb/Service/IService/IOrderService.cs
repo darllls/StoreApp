@@ -10,7 +10,8 @@ namespace StoreWeb.Service.IService
         Task<OrderDTO> UpdateOrder(int orderId, OrderDTO order);
         Task<bool> DeleteOrder(int orderId);
         Task<List<OrderItemDTO>> GetOrderItems(int orderId);
-
+        Task<bool> IsOrderNumberUnique(string orderNumber);
+        Task<IEnumerable<AvailableProductDTO>> GetAvailableProductsForEmployee(int employeeId);
     }
 
 }

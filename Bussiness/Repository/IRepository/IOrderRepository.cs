@@ -13,5 +13,7 @@ namespace Bussiness.Repository.IRepository
         Task<IEnumerable<OrderDTO>> GetAllOrdersAsync();
 
         Task<IEnumerable<OrderItemDTO>> GetOrderItemsAsync(int orderId);
+        Task<IEnumerable<AvailableProductDTO>> GetAvailableProductsForEmployeeStoreAsync(int employeeId);
+        Task<bool> IsOrderNumberUniqueAsync(string orderNumber);
     }
 }

@@ -9,6 +9,7 @@
         public string StoreName { get; set; }
         public string CityName { get; set; }
         public decimal TotalAmount { get; set; }
+        public DateTime OrderDate { get; set; }
         public List<OrderItemDTO> OrderItems { get; set; } = new List<OrderItemDTO>();
     }
 }

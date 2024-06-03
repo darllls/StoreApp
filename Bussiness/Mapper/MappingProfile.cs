@@ -33,6 +33,7 @@ namespace Bussiness.Mapper
 
             CreateMap<AvailableProduct, AvailableProductDTO>()
                 .ForMember(dest => dest.StoreName, opt => opt.MapFrom(src => src.Store != null ? src.Store.StoreName : null))
+                .ForMember(dest => dest.ProductName, opt => opt.MapFrom(src => src.Product != null ? src.Product.ProductName : null))
                 .ReverseMap();
 
             CreateMap<AttributeProduct, AttributeDTO>()
@@ -45,16 +46,25 @@ namespace Bussiness.Mapper
                 .ReverseMap();
 
             CreateMap<Order, OrderDTO>()
-                .ForMember(dest => dest.CustomerName, opt => opt.MapFrom(src => src.Customer != null ? $"{src.Customer.FirstName} {src.Customer.LastName}" : null))
-                .ForMember(dest => dest.EmployeeName, opt => opt.MapFrom(src => src.Employee != null ? $"{src.Employee.FirstName} {src.Employee.LastName}" : null))
-                .ForMember(dest => dest.StoreName, opt => opt.MapFrom(src => src.Employee != null && src.Employee.Store != null ? src.Employee.Store.StoreName : null))
-                .ForMember(dest => dest.CityName, opt => opt.MapFrom(src => src.Employee != null && src.Employee.Store != null && src.Employee.Store.City != null ? src.Employee.Store.City.Name : null))
-                .ForMember(dest => dest.OrderItems, opt => opt.MapFrom(src => src.OrderItems))
-                .ReverseMap();
+            .ForMember(dest => dest.CustomerName, opt => opt.MapFrom(src => src.Customer != null ? $"{src.Customer.FirstName} {src.Customer.LastName}" : null))
+            .ForMember(dest => dest.EmployeeName, opt => opt.MapFrom(src => src.Employee != null ? $"{src.Employee.FirstName} {src.Employee.LastName}" : null))
+            .ForMember(dest => dest.StoreName, opt => opt.MapFrom(src => src.Employee != null && src.Employee.Store != null ? src.Employee.Store.StoreName : null))
+            .ForMember(dest => dest.CityName, opt => opt.MapFrom(src => src.Employee != null && src.Employee.Store != null && src.Employee.Store.City != null ? src.Employee.Store.City.Name : null))
+            .ForMember(dest => dest.OrderItems, opt => opt.MapFrom(src => src.OrderItems))
+            .ReverseMap()
+            .ForMember(dest => dest.Customer, opt => opt.Ignore()) // Ignore mapping for Customer and Employee
+            .ForMember(dest => dest.Employee, opt => opt.Ignore());
 
             CreateMap<OrderItem, OrderItemDTO>()
                 .ForMember(dest => dest.ProductName, opt => opt.MapFrom(src => src.AvailableProduct != null && src.AvailableProduct.Product != null ? src.AvailableProduct.Product.ProductName : null))
                 .ReverseMap();
+
+            CreateMap<AvailableProduct, AvailableProductDTO>()
+                .ForMember(dest => dest.AvailableProductId, opt => opt.MapFrom(src => src.AvailableProductId))
+                .ReverseMap();
+
+
+
         }
     }
 }

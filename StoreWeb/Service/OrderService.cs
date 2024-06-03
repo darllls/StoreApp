@@ -94,5 +94,23 @@ namespace StoreWeb.Service
             return new List<OrderItemDTO>();
         }
 
+        public async Task<bool> IsOrderNumberUnique(string orderNumber)
+        {
+            var response = await _httpClient.GetAsync($"/api/orders/unique?number={orderNumber}");
+            return response.IsSuccessStatusCode;
+        }
+
+        public async Task<IEnumerable<AvailableProductDTO>> GetAvailableProductsForEmployee(int employeeId)
+        {
+            var response = await _httpClient.GetAsync($"/api/orders/{employeeId}/available-products");
+            if (response.IsSuccessStatusCode)
+            {
+                var content = await response.Content.ReadAsStringAsync();
+                var availableProducts = JsonConvert.DeserializeObject<IEnumerable<AvailableProductDTO>>(content);
+                return availableProducts;
+            }
+
+            return new List<AvailableProductDTO>();
+        }
     }
 }

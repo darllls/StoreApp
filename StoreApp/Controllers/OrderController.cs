@@ -68,6 +68,20 @@ namespace WebApi.Controllers
 
             return Ok(orderItems);
         }
+
+        [HttpGet("unique")]
+        public async Task<ActionResult<bool>> IsOrderNumberUnique(string number)
+        {
+            var isUnique = await _orderRepository.IsOrderNumberUniqueAsync(number);
+            return Ok(isUnique);
+        }
+
+        [HttpGet("{employeeId}/available-products")]
+        public async Task<ActionResult<IEnumerable<AvailableProductDTO>>> GetAvailableProductsForEmployee(int employeeId)
+        {
+            var availableProducts = await _orderRepository.GetAvailableProductsForEmployeeStoreAsync(employeeId);
+            return Ok(availableProducts);
+        }
     }
 
 }
