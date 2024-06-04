@@ -62,7 +62,7 @@ else
                     <td>@order.StoreName</td>
                     <td>@order.CityName</td>
                     <td>₴ @order.TotalAmount</td>
-                    <td>@order.OrderDate.ToString("yyyy-MM-dd")</td>
+                    <td>@order.OrderDate.ToString("dd.MM.yyyy")</td>
                     <td>
                         <button class="btn btn-outline-dark" @onclick="() => ViewOrderItems(order.OrderId)">
                             <span class="material-icons">visibility</span> View Items

@@ -65,6 +65,10 @@ public class OrderRepository : IOrderRepository
 
             // Fetch product prices and calculate TotalAmount based on OrderItems
             decimal? totalAmount = 0;
+
+            // Clear existing order items to avoid duplication
+            order.OrderItems.Clear();
+
             foreach (var orderItemDto in orderDto.OrderItems)
             {
                 var availableProduct = await _context.AvailableProducts
@@ -132,6 +136,8 @@ public class OrderRepository : IOrderRepository
             existingOrder.EmployeeId = employee.EmployeeId;
             existingOrder.CustomerId = customer.CustomerId;
 
+            existingOrder.OrderItems.Clear();
+
             // Fetch product prices and calculate TotalAmount based on OrderItems
             decimal? totalAmount = 0;
             foreach (var orderItemDto in orderDto.OrderItems)
@@ -182,6 +188,10 @@ public class OrderRepository : IOrderRepository
         if (existingOrder == null)
             return false;
 
+        // Remove associated OrderItems
+        _context.OrderItems.RemoveRange(existingOrder.OrderItems);
+
+        // Remove the order itself
         _context.Orders.Remove(existingOrder);
         await _context.SaveChangesAsync();
         return true;

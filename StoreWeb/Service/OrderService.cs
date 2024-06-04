@@ -72,14 +72,25 @@ namespace StoreWeb.Service
             var orderJson = JsonConvert.SerializeObject(orderDto);
             var content = new StringContent(orderJson, Encoding.UTF8, "application/json");
 
+            // Log the payload being sent
+            Console.WriteLine($"Updating Order {orderId} with payload: {orderJson}");
+
             var response = await _httpClient.PutAsync($"/api/orders/{orderId}", content);
-            response.EnsureSuccessStatusCode();
+
+            if (!response.IsSuccessStatusCode)
+            {
+                var errorMessage = await response.Content.ReadAsStringAsync();
+                // Log the error message
+                Console.WriteLine($"Failed to update order. Status: {response.StatusCode}, Error: {errorMessage}");
+                throw new HttpRequestException($"Failed to update order. Status: {response.StatusCode}, Error: {errorMessage}");
+            }
 
             var updatedOrderJson = await response.Content.ReadAsStringAsync();
             var updatedOrder = JsonConvert.DeserializeObject<OrderDTO>(updatedOrderJson);
 
             return updatedOrder;
         }
+
 
         public async Task<List<OrderItemDTO>> GetOrderItems(int orderId)
         {

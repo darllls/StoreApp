@@ -39,11 +39,11 @@
                     </select>
                     <ValidationMessage For="@(() => Order.CustomerName)" />
                 </div>
-                </div>
-                <div class="row mb-3">
+            </div>
+            <div class="row mb-3">
                 <div class="col-md-6">
                     <label for="employeeName" class="form-label">Employee</label>
-                    <select class="form-select" @onchange="HandleEmployeeChange" id="employeeName">
+                    <select class="form-select" @bind="SelectedEmployeeName" @bind:event="onchange" id="employeeName">
                         <option value="">-- Select Employee --</option>
                         @foreach (var employee in Employees)
                         {
@@ -61,7 +61,7 @@
             <div class="row mb-3">
                 <div class="col-md-12">
                     <label for="orderItems" class="form-label">Order Items</label>
-                    @foreach (var item in Order.OrderItems)
+                    @foreach (var item in OrderItems)
                     {
                         <div class="input-group mb-3">
                             <select class="form-select" @bind="item.ProductName">
@@ -80,7 +80,7 @@
             </div>
 
             <div class="form-group py-2">
-                <button type="submit" class="btn btn-primary">@Title</button>
+                <button type="button" class="btn btn-primary" @onclick="SaveButtonClicked">@Title</button>
                 <NavLink href="/orders" class="btn btn-secondary">Back</NavLink>
             </div>
         </EditForm>
@@ -97,6 +97,8 @@
     private IEnumerable<CustomerDTO> Customers { get; set; } = new List<CustomerDTO>();
     private IEnumerable<EmployeeDTO> Employees { get; set; } = new List<EmployeeDTO>();
     private IEnumerable<AvailableProductDTO> AvailableProducts { get; set; } = new List<AvailableProductDTO>();
+    private List<OrderItemDTO> OrderItems { get; set; } = new List<OrderItemDTO>();
+    private bool isSaveClicked = false;
 
     private string SelectedEmployeeName { get; set; }
 
@@ -110,6 +112,7 @@
             Order = await OrderService.GetOrderById(Id);
             Title = "Update";
             SelectedEmployeeName = Order.EmployeeName;
+            OrderItems = Order.OrderItems.ToList();
             await LoadAvailableProducts();
         }
         IsLoading = false;
@@ -117,6 +120,11 @@
 
     private async Task SaveOrder()
     {
+        if (!isSaveClicked)
+        {
+            return; 
+        }
+
         if (!await OrderService.IsOrderNumberUnique(Order.Number))
         {
             await Js.ToastrFailure("Order number already exists. Please use a different number.");
@@ -129,6 +137,7 @@
         {
             Order.StoreName = selectedEmployee.StoreName;
             Order.CityName = selectedEmployee.CityName;
+            Order.OrderItems = OrderItems;
             // You can optionally set Employee.CityName and other properties based on selectedStore
         }
         try
@@ -166,21 +175,20 @@
         }
     }
 
+    private async Task SaveButtonClicked()
+    {
+        isSaveClicked = true;
+        await SaveOrder();
+    }
+
     private void AddOrderItem()
     {
-        if (Order.OrderItems == null)
-        {
-            Order.OrderItems = new List<OrderItemDTO>();
-        }
-        Order.OrderItems.Add(new OrderItemDTO());
+        OrderItems.Add(new OrderItemDTO());
     }
 
     private void RemoveOrderItem(OrderItemDTO item)
     {
-        if (Order.OrderItems != null)
-        {
-            Order.OrderItems.Remove(item);
-        }
+        OrderItems.Remove(item);
     }
 
     private async Task HandleEmployeeChange(ChangeEventArgs e)
