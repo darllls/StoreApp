@@ -1,5 +1,5 @@
 ﻿using AutoMapper;
-using Bussiness.Repository.IRepository;
+using Business.Repository.IRepository;
 using DataContext.Data;
 using DataContext.Models;
 using DTOs;
@@ -10,7 +10,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Bussiness.Repository
+namespace Business.Repository
 {
     public class CustomerTypeRepository : ICustomerTypeRepository
     {

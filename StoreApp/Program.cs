@@ -1,5 +1,5 @@
-using Bussiness.Repository;
-using Bussiness.Repository.IRepository;
+using Business.Repository;
+using Business.Repository.IRepository;
 using DataContext.Data;
 using Microsoft.EntityFrameworkCore;
 
@@ -22,6 +22,7 @@ builder.Services.AddScoped<IStoreRepository, StoreRepository>();
 builder.Services.AddScoped<IBrandRepository, BrandRepository>();
 builder.Services.AddScoped<ICategoryRepository, CategoryRepository>();
 builder.Services.AddScoped<IOrderRepository, OrderRepository>();
+builder.Services.AddScoped<ISupplyRepository, SupplyRepository>();
 
 builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 

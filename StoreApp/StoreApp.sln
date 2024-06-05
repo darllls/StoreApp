@@ -9,7 +9,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DataContext", "..\DataAcces
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DTOs", "..\DTOs\DTOs.csproj", "{BEB18540-74D8-4530-A95E-8B9E34D35B34}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Bussiness", "..\Bussiness\Bussiness.csproj", "{DC399FB2-2A1D-4E9C-9C9E-8A4900CA7EF0}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Business", "..\Bussiness\Business.csproj", "{DC399FB2-2A1D-4E9C-9C9E-8A4900CA7EF0}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "StoreWeb", "..\StoreWeb\StoreWeb.csproj", "{FBA2A512-E5B5-4383-BA28-D6E840616789}"
 EndProject

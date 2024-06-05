@@ -147,7 +147,7 @@
                 </div>
             </div>
             <div class="form-group py-2">
-                <button type="submit" class="btn btn-primary">@Title</button>
+                <button type="button" class="btn btn-primary" @onclick="SaveButtonClicked">@Title</button>
                 <NavLink href="/products" class="btn btn-secondary">Back</NavLink>
             </div>
 
@@ -171,6 +171,7 @@
     private IEnumerable<StoreDTO> Stores { get; set; } = new List<StoreDTO>();
     private IEnumerable<BrandDTO> Brands { get; set; } = new List<BrandDTO>();
     private IEnumerable<CategoryDTO> Categories { get; set; } = new List<CategoryDTO>();
+    private bool isSaveClicked = false;
 
     protected override async Task OnInitializedAsync()
     {
@@ -188,6 +189,11 @@
 
         private async Task SaveProduct()
         {
+            if (!isSaveClicked)
+            {
+                return;
+            }
+
             // Perform validation checks
             if (!ValidateProduct())
             {
@@ -238,6 +244,12 @@
             {
                 IsLoading = false;
             }
+        }
+
+        private async Task SaveButtonClicked()
+        {
+            isSaveClicked = true;
+            await SaveProduct();
         }
 
         private bool ValidateProduct()

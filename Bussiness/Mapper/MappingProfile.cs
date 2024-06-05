@@ -7,7 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Bussiness.Mapper
+namespace Business.Mapper
 {
     public class MappingProfile : Profile
     {
@@ -17,6 +17,7 @@ namespace Bussiness.Mapper
             CreateMap<Brand, BrandDTO>().ReverseMap();
             CreateMap<ProductCategory, CategoryDTO>().ReverseMap();
             CreateMap<CustomerType, CustomerTypeDTO>().ReverseMap();
+            CreateMap<SupplyStatus, SupplyStatusDTO>().ReverseMap();
             CreateMap<Customer, CustomerDTO>()
                 .ForMember(dest => dest.CustomerTypeName, opt => opt.MapFrom(src => src.CustomerType.TypeName))
                 .ReverseMap();
@@ -30,12 +31,6 @@ namespace Bussiness.Mapper
                 .ForMember(dest => dest.BrandName, opt => opt.MapFrom(src => src.Brand != null ? src.Brand.BrandName : null))
                 .ForMember(dest => dest.CategoryName, opt => opt.MapFrom(src => src.ProductCategory != null ? src.ProductCategory.CategoryName : null))
                 .ReverseMap();
-
-            CreateMap<AvailableProduct, AvailableProductDTO>()
-                .ForMember(dest => dest.StoreName, opt => opt.MapFrom(src => src.Store != null ? src.Store.StoreName : null))
-                .ForMember(dest => dest.ProductName, opt => opt.MapFrom(src => src.Product != null ? src.Product.ProductName : null))
-                .ReverseMap();
-
             CreateMap<AttributeProduct, AttributeDTO>()
                 .ForMember(dest => dest.AttributeName, opt => opt.MapFrom(src => src.Attribute != null ? src.Attribute.AttributeName : null))
                 .ForMember(dest => dest.AttributeValue, opt => opt.MapFrom(src => src.AttributeValue != null ? src.AttributeValue.AttributeValue1 : null))
@@ -43,6 +38,11 @@ namespace Bussiness.Mapper
 
             CreateMap<AttributeDTO, DataContext.Models.Attribute>()
                 .ForMember(dest => dest.AttributeName, opt => opt.MapFrom(src => src.AttributeName))
+                .ReverseMap();
+
+            CreateMap<AvailableProduct, AvailableProductDTO>()
+                .ForMember(dest => dest.StoreName, opt => opt.MapFrom(src => src.Store != null ? src.Store.StoreName : null))
+                .ForMember(dest => dest.ProductName, opt => opt.MapFrom(src => src.Product != null ? src.Product.ProductName : null))
                 .ReverseMap();
 
             CreateMap<Order, OrderDTO>()
@@ -63,7 +63,30 @@ namespace Bussiness.Mapper
                 .ForMember(dest => dest.AvailableProductId, opt => opt.MapFrom(src => src.AvailableProductId))
                 .ReverseMap();
 
+            CreateMap<Supply, SupplyDTO>()
+                .ForMember(dest => dest.SupplierName, opt => opt.MapFrom(src => src.Supplier.Name))
+                .ForMember(dest => dest.StatusName, opt => opt.MapFrom(src => src.Status.StatusName))
+                .ReverseMap()
+                .ForMember(dest => dest.Supplier, opt => opt.Ignore());
 
+            CreateMap<Supplier, SupplierDTO>()
+                .ForMember(dest => dest.City, opt => opt.MapFrom(src => src.City.Name))
+                .ReverseMap();
+
+            CreateMap<SupplyDetail, SupplyDetailsDTO>()
+                .ForMember(dest => dest.ProductName, opt => opt.MapFrom(src => src.Product.ProductName))
+                .ReverseMap()
+                .ForMember(dest => dest.Product, opt => opt.Ignore());
+
+            CreateMap<ShipmentInvoice, ShipmentInvoiceDTO>()
+                .ForMember(dest => dest.StoreName, opt => opt.MapFrom(src => src.AvailableProduct.Store.StoreName))
+                .ForMember(dest => dest.EmployeeName, opt => opt.MapFrom(src => src.Employee.FirstName + " " + src.Employee.LastName))
+                .ReverseMap()
+                .ForMember(dest => dest.AvailableProduct, opt => opt.Ignore())
+                .ForMember(dest => dest.Employee, opt => opt.Ignore())
+                .ForMember(dest => dest.SupplyDetails, opt => opt.Ignore());
+
+            
 
         }
     }

@@ -1,5 +1,5 @@
 ﻿using AutoMapper;
-using Bussiness.Repository.IRepository;
+using Business.Repository.IRepository;
 using DataContext.Data;
 using DataContext.Models;
 using DTOs;
@@ -8,7 +8,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace Bussiness.Repository
+namespace Business.Repository
 {
     public class CategoryRepository : ICategoryRepository
     {

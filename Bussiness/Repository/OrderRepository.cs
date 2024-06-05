@@ -3,10 +3,10 @@ using DataContext.Data;
 using DataContext.Models;
 using DTOs;
 using Microsoft.EntityFrameworkCore;
-using Bussiness.Repository.IRepository;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Business.Repository.IRepository;
 
 public class OrderRepository : IOrderRepository
 {

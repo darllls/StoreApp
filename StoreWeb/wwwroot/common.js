@@ -25,6 +25,14 @@ window.ShowSweetAlert = (type, message) => {
     }
 }
 
+function ShowSupplierModal() {
+    $('#supplierInfoModal').modal('show');
+};
+
+function HideSupplierModal() {
+    $('#supplierInfoModal').modal('hide');
+};
+
 function ShowProductModal() {
     $('#productDetailsModal').modal('show');
 };
@@ -57,3 +65,10 @@ function HideDeleteConfirmationModal() {
     $('#deleteConfirmationModal').modal('hide');
 }
 
+function ShowSupplyModal() {
+    $('#supplyDetailsModal').modal('show');
+};
+
+function HideSupplyModal() {
+    $('#supplyDetailsModal').modal('hide');
+};

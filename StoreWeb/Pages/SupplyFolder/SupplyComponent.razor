@@ -1,0 +1,176 @@
+﻿@page "/supplies"
+@inject ISupplyService SupplyService
+@inject NavigationManager NavigationManager
+@inject IJSRuntime _js
+@inject NavigationManager navigationManager
+
+<_DeleteConfirmation IsParentComponentProcessing="IsProcessing" ConfirmationChanged="ConfirmDelete_Click"></_DeleteConfirmation>
+
+<h3>Supplies</h3>
+
+<div class="row mb-3">
+    <div class="col-md-3">
+        <select class="form-select" @bind="SelectedSupplierId">
+            <option value="">All Suppliers</option>
+            @foreach (var supplier in Suppliers)
+            {
+                <option value="@supplier.SupplierId">@supplier.Name</option>
+            }
+        </select>
+    </div>
+    <div class="col-md-3">
+        <input type="text" class="form-control" placeholder="Search..." @bind="searchText" />
+    </div>
+    <div class="col-md-3">
+        <button class="btn btn-success mb-3" @onclick="CreateSupply"> + Create</button>
+    </div>
+</div>
+
+@if (IsProcessing)
+{
+    <div style="position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);">
+        <div class="spinner-border" role="status">
+            <span class="visually-hidden">Loading...</span>
+        </div>
+    </div>
+}
+else
+{
+    <table class="table table-bordered">
+        <thead>
+            <tr>
+                <th>Supply Number</th>
+                <th>Supplier</th>
+                <th>Total Sum</th>
+                <th>Supply Date</th>
+                <th>Status</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var supply in FilteredSupplies)
+            {
+                <tr>
+                    <td>@supply.SupplyNumber</td>
+                    <td>
+                        <button class="btn btn-outline-dark" @onclick="() => ViewSupplierInfo(supply.SupplierId)">
+                            <span class="material-icons">info</span> @supply.SupplierName
+                        </button>
+                    </td>
+                    <td>₴ @supply.Sum</td>
+                    <td>@supply.SupplyDate?.ToString("dd.MM.yyyy")</td>
+                    <td>@supply.StatusName</td>
+                    <td>
+                        <button class="btn btn-outline-dark" @onclick="() => ViewSupplyDetails(supply.SupplyId)">
+                            <span class="material-icons">visibility</span> View Details
+                        </button>
+                        <button class="btn btn-primary" @onclick="() => UpdateSupply(supply.SupplyId)">
+                            <span class="material-icons">edit</span>
+                        </button>
+                        <button class="btn btn-danger" @onclick="() => DeleteSupply(supply.SupplyId)">
+                            <span class="material-icons">delete</span>
+                        </button>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@* <_SupplyDetailsModal SupplyId="SelectedSupplyId"></_SupplyDetailsModal> *@
+<_SupplierInfoModal SupplierId="selectedSupplierId"></_SupplierInfoModal>
+
+@* <script>
+    function ShowSupplierModal() {
+        $('#supplierInfoModal').modal('show');
+    };
+
+    function HideSupplierModal() {
+        $('#supplierInfoModal').modal('hide');
+    };
+
+</script> *@
+
+@code {
+    private List<SupplyDTO> Supplies { get; set; } = new List<SupplyDTO>();
+    private List<SupplierDTO> Suppliers { get; set; } = new List<SupplierDTO>();
+    private bool IsProcessing { get; set; }
+    private int SelectedSupplyId { get; set; }
+    private string searchText { get; set; } = "";
+    private int? SelectedSupplierId { get; set; }
+    private int? selectedSupplierId { get; set; } = 0;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var uri = navigationManager.ToAbsoluteUri(navigationManager.Uri);
+        if (uri.Query.Contains("search"))
+        {
+            var query = System.Web.HttpUtility.ParseQueryString(uri.Query);
+            searchText = query["search"];
+        }
+        await LoadSupplies();
+        await LoadSuppliers();
+    }
+
+    private async Task LoadSupplies()
+    {
+        IsProcessing = true;
+        Supplies = await SupplyService.GetAllSupplies();
+        IsProcessing = false;
+    }
+
+    private async Task LoadSuppliers()
+    {
+        Suppliers = await SupplyService.GetSuppliers();
+    }
+
+    private IEnumerable<SupplyDTO> FilteredSupplies =>
+        Supplies.Where(s =>
+            (SelectedSupplierId == null || s.SupplierId == SelectedSupplierId) &&
+            (string.IsNullOrEmpty(searchText) ||
+            s.SupplierName.Contains(searchText, StringComparison.OrdinalIgnoreCase) ||
+            s.SupplyNumber.Contains(searchText, StringComparison.OrdinalIgnoreCase) ||
+            s.StatusName.Contains(searchText, StringComparison.OrdinalIgnoreCase)));
+
+    private void CreateSupply()
+    {
+        NavigationManager.NavigateTo("/supplies/create");
+    }
+
+    private void UpdateSupply(int supplyId)
+    {
+        NavigationManager.NavigateTo($"/supplies/edit/{supplyId}");
+    }
+
+    private async Task DeleteSupply(int supplyId)
+    {
+        SelectedSupplyId = supplyId;
+        await _js.InvokeVoidAsync("ShowDeleteConfirmationModal");
+    }
+
+    private async Task ConfirmDelete_Click(bool isConfirmed)
+    {
+        IsProcessing = true;
+        if (isConfirmed && SelectedSupplyId != 0)
+        {
+            await SupplyService.DeleteSupply(SelectedSupplyId);
+            await _js.ToastrSuccess("Supply deleted successfully.");
+            await LoadSupplies();
+            await _js.InvokeVoidAsync("HideDeleteConfirmationModal");
+        }
+        IsProcessing = false;
+    }
+
+    private async Task ViewSupplyDetails(int supplyId)
+    {
+        SelectedSupplyId = supplyId;
+        await _js.InvokeVoidAsync("ShowSupplyModal");
+    }
+
+    private async Task ViewSupplierInfo(int? supplierId)
+    {
+        selectedSupplierId = supplierId;
+        await _js.InvokeVoidAsync("ShowSupplierModal");
+
+    }
+}

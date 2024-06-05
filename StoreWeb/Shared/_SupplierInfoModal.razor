@@ -1,0 +1,61 @@
+﻿@inject ISupplyService SupplyService
+
+<div class="modal fade" id="supplierInfoModal" tabindex="-1" role="dialog" aria-labelledby="supplierInfoModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="supplierInfoModalLabel">Supplier Information</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                @if (IsLoadingSupplierInfo)
+                {
+                    <div class="spinner-border" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                }
+                else if (SupplierInfo != null)
+                {
+                    <dl class="row">
+                        <dt class="col-sm-4">Name:</dt>
+                        <dd class="col-sm-8">@SupplierInfo.Name</dd>
+
+                        <dt class="col-sm-4">Phone:</dt>
+                        <dd class="col-sm-8">@SupplierInfo.Phone</dd>
+
+                        <dt class="col-sm-4">Email:</dt>
+                        <dd class="col-sm-8">@SupplierInfo.Email</dd>
+
+                        <dt class="col-sm-4">City:</dt>
+                        <dd class="col-sm-8">@SupplierInfo.City</dd>
+
+                        <dt class="col-sm-4">Address:</dt>
+                        <dd class="col-sm-8">@SupplierInfo.Address</dd> 
+                    </dl>
+                }
+                else
+                {
+                    <p>No information available for this supplier.</p>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+
+@code {
+    [Parameter]
+    public int? SupplierId { get; set; }
+    private bool IsLoadingSupplierInfo { get; set; }
+    private SupplierDTO SupplierInfo { get; set; }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        IsLoadingSupplierInfo = true;
+        if (SupplierId != 0)
+        {
+            SupplierInfo = await SupplyService.GetSupplierById(SupplierId.Value);
+        }
+        IsLoadingSupplierInfo = false;
+    }
+}

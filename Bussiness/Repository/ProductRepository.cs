@@ -7,7 +7,7 @@ using DataContext;
 using DataContext.Models;
 using DTOs;
 using Microsoft.EntityFrameworkCore;
-using Bussiness.Repository.IRepository;
+using Business.Repository.IRepository;
 
 public class ProductRepository: IProductRepository
 {
