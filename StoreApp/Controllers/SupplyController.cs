@@ -29,6 +29,13 @@ namespace StoreApp.Controllers
             return Ok(suppliers);
         }
 
+        [HttpGet("statuses")]
+        public async Task<ActionResult<List<SupplyStatusDTO>>> GetSupplyStatuses()
+        {
+            var supplystatuses = await _supplyRepository.GetAllSupplyStatusesAsync();
+            return Ok(supplystatuses);
+        }
+
         [HttpGet("{id}")]
         public async Task<ActionResult<SupplyDTO>> GetSupplyById(int id)
         {

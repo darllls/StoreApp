@@ -10,6 +10,7 @@ namespace StoreWeb.Service.IService
         Task<SupplyDTO> UpdateSupply(int supplyId, SupplyDTO supplyDto);
         Task<bool> DeleteSupply(int supplyId);
 
+        Task<List<SupplyStatusDTO>> GetSupplyStatuses();
         Task<List<SupplierDTO>> GetSuppliers();
         Task<SupplierDTO> GetSupplierById(int supplierId);
         Task<List<SupplyDetailsDTO>> GetSupplyDetails(int supplyId);

@@ -102,6 +102,19 @@ namespace StoreWeb.Service
             return new List<SupplierDTO>();
         }
 
+        public async Task<List<SupplyStatusDTO>> GetSupplyStatuses()
+        {
+            var response = await _httpClient.GetAsync("/api/supplies/statuses");
+            if (response.IsSuccessStatusCode)
+            {
+                var content = await response.Content.ReadAsStringAsync();
+                var supplystatuses = JsonConvert.DeserializeObject<List<SupplyStatusDTO>>(content);
+                return supplystatuses;
+            }
+
+            return new List<SupplyStatusDTO>();
+        }
+
         public async Task<SupplierDTO> GetSupplierById(int supplierId)
         {
             var response = await _httpClient.GetAsync($"/api/supplies/suppliers/{supplierId}");

@@ -183,6 +183,15 @@ namespace Business.Repository
             return _mapper.Map<IEnumerable<SupplierDTO>>(suppliers);
         }
 
+        public async Task<List<SupplyStatusDTO>> GetAllSupplyStatusesAsync()
+        {
+            var supplystatuses = await _context.SupplyStatuses
+                .Select(c => _mapper.Map<SupplyStatusDTO>(c))
+                .ToListAsync();
+
+            return supplystatuses;
+        }
+
         public async Task<SupplierDTO> GetSupplierByIdAsync(int supplierId)
         {
             var supplier = await _context.Suppliers

@@ -1,0 +1,318 @@
+﻿@page "/supplies/create"
+@page "/supplies/edit/{Id:int}"
+
+@inject ISupplyService SupplyService
+@inject IProductService ProductService
+@inject IEmployeeService EmployeeService
+@inject NavigationManager NavigationManager
+@inject IJSRuntime Js
+
+<h3 class="card-title text-primary mb-3 ml-3">@Title Supply</h3>
+
+<div class="col-md-10">
+    @if (IsLoading)
+    {
+        <div style="position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);">
+            <div class="spinner-border" role="status">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+        </div>
+    }
+    else
+    {
+        <EditForm Model="Supply" OnValidSubmit="SaveSupply">
+            <DataAnnotationsValidator />
+
+            <div class="row mb-3">
+                <div class="col-md-6">
+                    <label for="supplyNumber" class="form-label">Supply Number</label>
+                    <InputText @bind-Value="Supply.SupplyNumber" class="form-control" id="supplyNumber" />
+                    <ValidationMessage For="@(() => Supply.SupplyNumber)" />
+                </div>
+                <div class="col-md-6">
+                    <label for="supplierId" class="form-label">Supplier</label>
+                    <select class="form-select" @bind="Supply.SupplierId" id="supplierId">
+                        <option value="">-- Select Supplier --</option>
+                        @foreach (var supplier in Suppliers)
+                        {
+                            <option value="@supplier.SupplierId">@supplier.Name</option>
+                        }
+                    </select>
+                    <ValidationMessage For="@(() => Supply.SupplierId)" />
+                </div>
+            </div>
+
+            <div class="row mb-3">
+                <div class="col-md-6">
+                    <label for="supplyDate" class="form-label">Supply Date</label>
+                    <InputDate @bind-Value="Supply.SupplyDate" class="form-control" id="supplyDate" />
+                    <ValidationMessage For="@(() => Supply.SupplyDate)" />
+                </div>
+                <div class="col-md-6">
+                    <label for="statusId" class="form-label">Status</label>
+                    <select class="form-select" @bind="Supply.SupplyStatusId" id="statusId">
+                        <option value="">-- Select Status --</option>
+                        @foreach (var status in SupplyStatuses)
+                        {
+                            <option value="@status.SupplyStatusId">@status.StatusName</option>
+                        }
+                    </select>
+                    <ValidationMessage For="@(() => Supply.SupplyStatusId)" />
+                </div>
+            </div>
+
+            <div class="row mb-3">
+                <div class="col-md-12">
+                    <h5>Supply Details</h5>
+                    @foreach (var detail in Supply.SupplyDetails)
+                    {
+                        <div class="card mb-3">
+                            <div class="card-header">
+                                Supply Detail
+                                <button class="btn btn-sm btn-danger float-end" @onclick="() => RemoveSupplyDetail(detail)">Remove</button>
+                            </div>
+                            </div>
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <label for="productName" class="form-label">Product Name</label>
+                                        <select class="form-select" @bind="detail.ProductName">
+                                            <option value="">-- Select Product --</option>
+                                            @foreach (var product in Products)
+                                            {
+                                                <option value="@product.ProductName">@product.ProductName</option>
+                                            }
+                                        </select>
+                                        <ValidationMessage For="@(() => detail.ProductName)" />
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label for="amount" class="form-label">Amount</label>
+                                        <InputNumber @bind-Value="detail.Amount" class="form-control" />
+                                        <ValidationMessage For="@(() => detail.Amount)" />
+                                    </div>
+                                </div>
+                                <div class="row mt-3">
+                                    <div class="col-md-6">
+                                        <label for="pricePerUnit" class="form-label">Price Per Unit</label>
+                                        <InputNumber @bind-Value="detail.PricePerUnit" class="form-control" />
+                                        <ValidationMessage For="@(() => detail.PricePerUnit)" />
+                                    </div>
+                                </div>
+                                <div class="row mt-3">
+                                    <div class="col-md-12">
+                                        <h6>Shipment Invoices</h6>
+                                        @foreach (var invoice in detail.ShipmentInvoices)
+                                        {
+                                            <div class="card mb-3">
+                                                <div class="card-header">
+                                                    Shipment Invoice
+                                                    <button class="btn btn-sm btn-danger float-end" @onclick="() => RemoveShipmentInvoice(detail, invoice)">Remove</button>
+                                                </div>
+                                                <div class="card-body">
+                                                    <div class="row">
+                                                        <div class="col-md-6">
+                                                            <label for="invoiceNumber" class="form-label">Invoice Number</label>
+                                                            <InputText @bind-Value="invoice.InvoiceNumber" class="form-control" />
+                                                            <ValidationMessage For="@(() => invoice.InvoiceNumber)" />
+                                                        </div>
+                                                        <div class="col-md-6">
+                                                            <label for="employeeName" class="form-label">Employee</label>
+                                                            <select class="form-select" @bind="invoice.EmployeeName" @bind:event="onchange">
+                                                                <option value="">-- Select Employee --</option>
+                                                                @foreach (var employee in Employees)
+                                                                {
+                                                                <option value="@($"{employee.FirstName} {employee.LastName}")">@($"{employee.FirstName} {employee.LastName} - {employee.StoreName}")  </option>
+                                                                }
+                                                            </select>
+                                                            <ValidationMessage For="@(() => invoice.EmployeeName)" />
+                                                        </div>
+                                                    </div>
+                                                    <div class="col-md-6">
+                                                        <label for="totalAmount" class="form-label">Total Amount</label>
+                                                        <InputNumber @bind-Value="invoice.TotalAmount" class="form-control"/>
+                                                        <ValidationMessage For="@(() => invoice.TotalAmount)" />
+                                                    </div>
+
+                                                </div>
+                                            </div>
+                                        }
+                                        <button class="btn btn-sm btn-primary" @onclick="() => AddShipmentInvoice(detail)">Add Shipment Invoice</button>
+                                    </div>
+                                </div>
+                            </div>
+                    }
+                    <button class="btn btn-sm btn-primary" @onclick="AddSupplyDetail">Add Supply Detail</button>
+                </div>
+            </div>
+
+            <div class="form-group py-2">
+                <button type="button" class="btn btn-primary" @onclick="SaveButtonClicked">@Title</button>
+                <NavLink href="/supplies" class="btn btn-secondary">Back</NavLink>
+            </div>
+        </EditForm>
+    }
+</div>
+
+@code {
+    [Parameter]
+    public int Id { get; set; }
+
+    private SupplyDTO Supply { get; set; } = new SupplyDTO();
+    private string Title { get; set; } = "Create";
+    private bool IsLoading { get; set; }
+    private IEnumerable<SupplierDTO> Suppliers { get; set; } = new List<SupplierDTO>();
+    private IEnumerable<ProductDTO> Products { get; set; } = new List<ProductDTO>();
+    private IEnumerable<SupplyStatusDTO> SupplyStatuses { get; set; } = new List<SupplyStatusDTO>();
+    private IEnumerable<EmployeeDTO> Employees { get; set; } = new List<EmployeeDTO>();
+    private bool isSaveClicked = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        IsLoading = true;
+        if (Id != 0)
+        {
+            Title = "Edit";
+            Supply = await SupplyService.GetSupplyById(Id);
+        }
+
+        Suppliers = await SupplyService.GetSuppliers();
+        Products = await ProductService.GetAllProducts();
+        SupplyStatuses = await SupplyService.GetSupplyStatuses();
+        Employees = await EmployeeService.GetAllEmployees();
+
+        IsLoading = false;
+    }
+
+    private async Task SaveSupply()
+    {
+        if (!isSaveClicked)
+        {
+            return;
+        }
+
+        IsLoading = true;
+        try
+        {
+            if (Id == 0)
+            {
+                // Populate StatusName
+                var status = SupplyStatuses.FirstOrDefault(s => s.SupplyStatusId == Supply.SupplyStatusId);
+                if (status != null)
+                {
+                    Supply.StatusName = status.StatusName;
+                }
+
+                // Populate SupplierName
+                var supplier = Suppliers.FirstOrDefault(s => s.SupplierId == Supply.SupplierId);
+                if (supplier != null)
+                {
+                    Supply.SupplierName = supplier.Name;
+                }
+
+                foreach (var detail in Supply.SupplyDetails)
+                {
+                    foreach (var invoice in detail.ShipmentInvoices)
+                    {
+                        var selectedEmployee = Employees.FirstOrDefault(emp => $"{emp.FirstName} {emp.LastName}" == invoice.EmployeeName);
+                        if (selectedEmployee != null)
+                        {
+                            invoice.StoreName = selectedEmployee.StoreName;
+                        }
+                        else
+                        {
+                            // Set default value if needed
+                            invoice.StoreName = string.Empty;
+                        }
+                    }
+                }
+
+                var result = await SupplyService.CreateSupply(Supply);
+                if (result != null)
+                {
+                    await Js.ToastrSuccess("Supply created successfully.");
+                    NavigationManager.NavigateTo("/supplies");
+                }
+                else
+                {
+                    await Js.ToastrFailure("Failed to create supply.");
+                }
+            }
+            else
+            {
+                // Populate StatusName
+                var status = SupplyStatuses.FirstOrDefault(s => s.SupplyStatusId == Supply.SupplyStatusId);
+                if (status != null)
+                {
+                    Supply.StatusName = status.StatusName;
+                }
+
+                // Populate SupplierName
+                var supplier = Suppliers.FirstOrDefault(s => s.SupplierId == Supply.SupplierId);
+                if (supplier != null)
+                {
+                    Supply.SupplierName = supplier.Name;
+                }
+
+                var result = await SupplyService.UpdateSupply(Id, Supply);
+                if (result != null)
+                {
+                    await Js.ToastrSuccess("Supply updated successfully.");
+                    NavigationManager.NavigateTo("/supplies");
+                }
+                else
+                {
+                    await Js.ToastrFailure("Failed to update supply.");
+                }
+            }
+        }
+        finally
+        {
+            IsLoading = false;
+        }
+    }
+
+
+    private async Task SaveButtonClicked()
+    {
+        isSaveClicked = true;
+        await SaveSupply();
+    }
+
+    private void AddSupplyDetail()
+    {
+        Supply.SupplyDetails.Add(new SupplyDetailsDTO());
+    }
+
+    private void RemoveSupplyDetail(SupplyDetailsDTO detail)
+    {
+        Supply.SupplyDetails.Remove(detail);
+    }
+
+    private void AddShipmentInvoice(SupplyDetailsDTO detail)
+    {
+        detail.ShipmentInvoices.Add(new ShipmentInvoiceDTO());
+    }
+
+    private void RemoveShipmentInvoice(SupplyDetailsDTO detail, ShipmentInvoiceDTO invoice)
+    {
+        detail.ShipmentInvoices.Remove(invoice);
+    }
+
+    private async Task HandleEmployeeChange(ShipmentInvoiceDTO invoice, ChangeEventArgs e)
+    {
+        var selectedEmployeeName = e.Value.ToString();
+        var selectedEmployee = Employees.FirstOrDefault(emp => $"{emp.FirstName} {emp.LastName}" == selectedEmployeeName);
+        if (selectedEmployee != null)
+        {
+            invoice.StoreName = selectedEmployee.StoreName;
+        }
+        else
+        {
+            invoice.StoreName = string.Empty;
+        }
+        StateHasChanged();
+    }
+
+
+
+}

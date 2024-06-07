@@ -15,6 +15,7 @@ namespace Business.Repository.IRepository
         Task<SupplyDTO> GetSupplyByIdAsync(int supplyId);
         Task<IEnumerable<SupplyDTO>> GetAllSuppliesAsync();
 
+        Task<List<SupplyStatusDTO>> GetAllSupplyStatusesAsync();
         Task<IEnumerable<SupplierDTO>> GetSuppliersAsync();
         Task<SupplierDTO> GetSupplierByIdAsync(int supplierId);
         Task<IEnumerable<SupplyDetailsDTO>> GetSupplyDetailsAsync(int supplyId);
