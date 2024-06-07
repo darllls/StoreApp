@@ -125,12 +125,14 @@ else
     }
 
     private IEnumerable<SupplyDTO> FilteredSupplies =>
-        Supplies.Where(s =>
-            (SelectedSupplierId == null || s.SupplierId == SelectedSupplierId) &&
-            (string.IsNullOrEmpty(searchText) ||
-            s.SupplierName.Contains(searchText, StringComparison.OrdinalIgnoreCase) ||
-            s.SupplyNumber.Contains(searchText, StringComparison.OrdinalIgnoreCase) ||
-            s.StatusName.Contains(searchText, StringComparison.OrdinalIgnoreCase)));
+    Supplies.Where(s =>
+        (SelectedSupplierId == null || s.SupplierId == SelectedSupplierId) &&
+        (string.IsNullOrEmpty(searchText) ||
+        s.SupplierName.Contains(searchText, StringComparison.OrdinalIgnoreCase) ||
+        s.SupplyNumber.Contains(searchText, StringComparison.OrdinalIgnoreCase) ||
+        s.SupplyDetails.Any(sd => sd.ShipmentInvoices.Any(si => si.EmployeeName.Contains(searchText, StringComparison.OrdinalIgnoreCase))) ||
+        s.StatusName.Contains(searchText, StringComparison.OrdinalIgnoreCase)));
+
 
     private void CreateSupply()
     {

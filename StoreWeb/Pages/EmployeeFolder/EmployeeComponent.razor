@@ -72,6 +72,9 @@ else
                         <button class="btn btn-outline-dark" @onclick="() => ViewOrders(employee)">
                             <span class="material-icons">visibility</span> View Orders
                         </button>
+                        <button class="btn btn-outline-dark" @onclick="() => ViewSupplies(employee)">
+                            <span class="material-icons">local_shipping</span> View Supplies
+                        </button>
                     </td>
                 </tr>
             }
@@ -197,4 +200,11 @@ else
         }
         IsProcessing = false;
     }
+
+    private void ViewSupplies(EmployeeDTO employee)
+    {
+        // Navigate to view supplies for employee with the employee's name as a search query
+       _nav.NavigateTo($"/supplies?search={employee.FirstName} {employee.LastName}");
+    }
+
 }
