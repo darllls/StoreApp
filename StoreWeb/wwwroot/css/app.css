@@ -101,3 +101,30 @@ a, .btn-link {
 code {
     color: #c02d76;
 }
+
+
+.left.modal.fade .modal-dialog,
+.right.modal.fade .modal-dialog {
+    position: fixed;
+    top: 130px;
+    margin: 0;
+    transition: transform 0.6s ease-in-out;
+}
+
+.left.modal.fade .modal-content,
+.right.modal.fade .modal-content {
+    max-height: calc(100vh - 210px);
+    overflow-y: auto;
+}
+
+.left.modal.fade.show .modal-dialog {
+    left: 270px;
+    transform: translateX(0%);
+}
+
+.right.modal.fade.show .modal-dialog {
+    right: 100px;
+    transform: translateX(0%);
+    overflow-y: auto;
+}
+

@@ -1,0 +1,63 @@
+﻿@inject ISupplyService SupplyService
+
+<div class="modal fade right" id="shipmentInvoicesModal" tabindex="-1" role="dialog" aria-labelledby="shipmentInvoicesModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="shipmentInvoicesModalLabel">Shipment Invoices</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                @if (IsLoading)
+                {
+                    <div class="spinner-border" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                }
+                else if (ShipmentInvoices != null && ShipmentInvoices.Any())
+                {
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Invoice Number</th>
+                                <th>Total Amount</th>
+                                <th>Store Name</th>
+                                <th>Employee Name</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var invoice in ShipmentInvoices)
+                            {
+                                <tr>
+                                    <td>@invoice.InvoiceNumber</td>
+                                    <td>@invoice.TotalAmount</td>
+                                    <td>@invoice.StoreName</td>
+                                    <td>@invoice.EmployeeName</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                }
+                else
+                {
+                    <p>No shipment invoices found for this supply detail.</p>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    [Parameter]
+    public int SupplyDetailsId { get; set; }
+
+    private bool IsLoading { get; set; }
+    private List<ShipmentInvoiceDTO> ShipmentInvoices { get; set; } = new List<ShipmentInvoiceDTO>();
+
+    protected override async Task OnParametersSetAsync()
+    {
+        IsLoading = true;
+        ShipmentInvoices = await SupplyService.GetShipmentInvoices(SupplyDetailsId);
+        IsLoading = false;
+    }
+}

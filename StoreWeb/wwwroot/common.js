@@ -72,3 +72,11 @@ function ShowSupplyModal() {
 function HideSupplyModal() {
     $('#supplyDetailsModal').modal('hide');
 };
+
+function ShowShipmentModal() {
+    $('#shipmentInvoicesModal').modal('show');
+};
+
+function HideShipmentModal() {
+    $('#shipmentInvoicesModal').modal('hide');
+};

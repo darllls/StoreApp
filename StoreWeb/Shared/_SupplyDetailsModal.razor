@@ -1,5 +1,79 @@
-﻿<h3>_SupplyDetailsModal</h3>
+﻿@inject ISupplyService SupplyService
+@inject IJSRuntime _js
+
+<div class="modal fade left" id="supplyDetailsModal" tabindex="-1" role="dialog" aria-labelledby="supplyDetailsModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="supplyDetailsModalLabel">Supply Details</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                @if (IsLoading)
+                {
+                    <div class="spinner-border" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                }
+                else if (SupplyDetails != null)
+                {
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Product Name</th>
+                                <th>Amount</th>
+                                <th>Price Per Unit</th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var detail in SupplyDetails)
+                            {
+                                <tr>
+                                    <td>@detail.ProductName</td>
+                                    <td>@detail.Amount</td>
+                                    <td>@detail.PricePerUnit</td>
+                                    <td>
+                                        @if (detail.ShipmentInvoices != null && detail.ShipmentInvoices.Any())
+                                        {
+                                            <button class="btn btn-outline-dark" @onclick="() => ViewShipmentInvoices(detail.SupplyDetailsId)">
+                                                View Shipment Invoices
+                                            </button>
+                                        }
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                }
+                else
+                {
+                    <p>No details found for this supply.</p>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+<_ShipmentInvoicesModal SupplyDetailsId="SelectedSupplyDetailsId"></_ShipmentInvoicesModal>
 
 @code {
+    [Parameter]
+    public int SupplyId { get; set; }
 
+    private int SelectedSupplyDetailsId { get; set; }
+    private bool IsLoading { get; set; }
+    private List<SupplyDetailsDTO> SupplyDetails { get; set; } = new List<SupplyDetailsDTO>();
+
+    protected override async Task OnParametersSetAsync()
+    {
+        IsLoading = true;
+        SupplyDetails = await SupplyService.GetSupplyDetails(SupplyId);
+        IsLoading = false;
+    }
+
+    private async Task ViewShipmentInvoices(int supplyDetailsId)
+    {
+        SelectedSupplyDetailsId = supplyDetailsId;
+        await _js.InvokeVoidAsync("ShowShipmentModal", supplyDetailsId);
+    }
 }
