@@ -16,6 +16,7 @@ builder.Services.AddScoped<IEmployeeService, EmployeeService>();
 builder.Services.AddScoped<IProductService, ProductService>();
 builder.Services.AddScoped<IOrderService, OrderService>();
 builder.Services.AddScoped<ISupplyService, SupplyService>();   
-
+builder.Services.AddScoped<ISupplyDetailsFactService, SupplyDetailsFactService>();
+builder.Services.AddScoped<IOrderDetailsFactService, OrderDetailsFactService>();
 
 await builder.Build().RunAsync();

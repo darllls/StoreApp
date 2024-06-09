@@ -1,0 +1,72 @@
+﻿@inject IOrderDetailsFactService OrderDetailsFactService
+
+<div class="modal fade" id="orderDetailsFactModal" tabindex="-1" role="dialog" aria-labelledby="orderDetailsFactModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="orderDetailsFactModalLabel">Order Details Fact</h5>
+            </div>
+            <div class="modal-body">
+                @if (SelectedOrderDetailsFact != null)
+                {
+                    <dl class="row">
+
+                        <dt class="col-sm-3">Product Name</dt>
+                        <dd class="col-sm-9">@SelectedOrderDetailsFact.ProductName</dd>
+
+                        <dt class="col-sm-3">Product Category</dt>
+                        <dd class="col-sm-9">@SelectedOrderDetailsFact.ProductCategoryConcat</dd>
+
+                        <dt class="col-sm-3">Brand</dt>
+                        <dd class="col-sm-9">@SelectedOrderDetailsFact.Brand</dd>
+
+                        <hr />
+
+                        <dt class="col-sm-3">Employee Name</dt>
+                        <dd class="col-sm-9">@SelectedOrderDetailsFact.EmployeeName</dd>
+                        <hr />
+
+                        <dt class="col-sm-3">Customer Type Name</dt>
+                        <dd class="col-sm-9">@SelectedOrderDetailsFact.CustomerTypeName</dd>
+
+                        <dt class="col-sm-3">Discount Rate</dt>
+                        <dd class="col-sm-9">@SelectedOrderDetailsFact.DiscountRate</dd>
+                        <hr />
+
+                        <dt class="col-sm-3">Period Start Date</dt>
+                        <dd class="col-sm-9">@SelectedOrderDetailsFact.PeriodStartDate?.ToString("dd.MM.yyyy")</dd>
+
+                        <dt class="col-sm-3">Period End Date</dt>
+                        <dd class="col-sm-9">@SelectedOrderDetailsFact.PeriodEndDate?.ToString("dd.MM.yyyy")</dd>
+                        <hr />
+
+                        <dt class="col-sm-3">Order Count</dt>
+                        <dd class="col-sm-9">@SelectedOrderDetailsFact.OrderCount</dd>
+
+                        <dt class="col-sm-3">Average Customer Sum</dt>
+                        <dd class="col-sm-9">₴ @SelectedOrderDetailsFact.AverageCustomerSum</dd>
+
+                        <dt class="col-sm-3">Avg Sales Quantity Change</dt>
+                        <dd class="col-sm-9">@SelectedOrderDetailsFact.AverageSalesQuantityChangePercentage</dd>
+                    </dl>
+                }
+                else
+                {
+                    <p>No order details fact selected.</p>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    [Parameter]
+    public int OrderDetailsFactId { get; set; }
+
+    private OrderDetailsFactDTO SelectedOrderDetailsFact { get; set; }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        SelectedOrderDetailsFact = await OrderDetailsFactService.GetOrderDetailsFactById(OrderDetailsFactId);
+    }
+}

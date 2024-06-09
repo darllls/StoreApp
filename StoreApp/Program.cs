@@ -1,6 +1,9 @@
 using Business.Repository;
 using Business.Repository.IRepository;
 using DataContext.Data;
+using DataContextMetadata.Data;
+using DataContextWH.Data;
+using DataContextWH.Models;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -13,6 +16,10 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddDbContext<StoreDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+builder.Services.AddDbContext<StoreWhContext>(options =>
+    options.UseSqlServer(builder.Configuration.GetConnectionString("WHConnection")));
+builder.Services.AddDbContext<StoreMetadataContext>(options =>
+    options.UseSqlServer(builder.Configuration.GetConnectionString("MetadataConnection")));
 
 builder.Services.AddScoped<ICustomerRepository, CustomerRepository>();
 builder.Services.AddScoped<IEmployeeRepository, EmployeeRepository>();
@@ -23,6 +30,9 @@ builder.Services.AddScoped<IBrandRepository, BrandRepository>();
 builder.Services.AddScoped<ICategoryRepository, CategoryRepository>();
 builder.Services.AddScoped<IOrderRepository, OrderRepository>();
 builder.Services.AddScoped<ISupplyRepository, SupplyRepository>();
+
+builder.Services.AddScoped<ISupplyDetailsFactRepository, SupplyDetailsFactRepository>();
+builder.Services.AddScoped<IOrderDetailsFactRepository, OrderDetailsFactRepository>();
 
 builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 

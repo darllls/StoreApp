@@ -12,6 +12,8 @@
 
   <ItemGroup>
     <ProjectReference Include="..\DataAccess\DataContext.csproj" />
+    <ProjectReference Include="..\DataContextMetadata\DataContextMetadata.csproj" />
+    <ProjectReference Include="..\DataContextWH\DataContextWH.csproj" />
     <ProjectReference Include="..\DTOs\DTOs.csproj" />
   </ItemGroup>
 

@@ -1,0 +1,64 @@
+﻿@inject ISupplyDetailsFactService SupplyDetailsFactService
+
+<div class="modal fade" id="supplyDetailsFactModal" tabindex="-1" role="dialog" aria-labelledby="supplyDetailsFactModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="supplyDetailsFactModalLabel">Supply Details Fact</h5>
+            </div>
+            <div class="modal-body">
+                @if (SelectedSupplyDetailsFact != null)
+                {
+                    <dl class="row">
+                        <dt class="col-sm-3">Supply Number</dt>
+                        <dd class="col-sm-9">@SelectedSupplyDetailsFact.SupplyNumber</dd>
+
+                        <dt class="col-sm-3">Supply Date</dt>
+                        <dd class="col-sm-9">@SelectedSupplyDetailsFact.SupplyDate?.ToString("dd.MM.yyyy")</dd>
+
+                        <dt class="col-sm-3">Supply Status</dt>
+                        <dd class="col-sm-9">@SelectedSupplyDetailsFact.SupplyStatus</dd>
+
+                        <hr />
+
+                        <dt class="col-sm-3">Product Name</dt>
+                        <dd class="col-sm-9">@SelectedSupplyDetailsFact.ProductName</dd>
+
+                        <dt class="col-sm-3">Product Category</dt>
+                        <dd class="col-sm-9">@SelectedSupplyDetailsFact.ProductCategoryConcat</dd>
+
+                        <dt class="col-sm-3">Brand</dt>
+                        <dd class="col-sm-9">@SelectedSupplyDetailsFact.Brand</dd>
+
+                        <hr />
+
+                        <dt class="col-sm-3">Unit Buy Date Difference</dt>
+                        <dd class="col-sm-9">@((SelectedSupplyDetailsFact.UnitBuyDateDifference.HasValue ? SelectedSupplyDetailsFact.UnitBuyDateDifference.ToString() : "-"))</dd>
+
+                        <!-- Add other properties here -->
+
+                    </dl>
+                }
+                else
+                {
+                    <p>No supply details fact selected.</p>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    [Parameter]
+    public int SupplyDetailsFactId { get; set; }
+
+    private SupplyDetailsFactDTO SelectedSupplyDetailsFact { get; set; }
+
+
+
+    protected override async Task OnParametersSetAsync()
+    {
+        SelectedSupplyDetailsFact = await SupplyDetailsFactService.GetSupplyDetailsFactById(SupplyDetailsFactId);
+
+    }
+}

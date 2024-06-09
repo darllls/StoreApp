@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using DataContext.Models;
+using DataContextWH.Models;
 using DTOs;
 using System;
 using System.Collections.Generic;
@@ -86,8 +87,26 @@ namespace Business.Mapper
                 .ForMember(dest => dest.Employee, opt => opt.Ignore())
                 .ForMember(dest => dest.SupplyDetails, opt => opt.Ignore());
 
-            
+            CreateMap<SupplyDetailsFact, SupplyDetailsFactDTO>()
+                .ForMember(dest => dest.SupplyNumber, opt => opt.MapFrom(src => src.Supply != null ? src.Supply.SupplyNumber : null))
+                .ForMember(dest => dest.SupplyDate, opt => opt.MapFrom(src => src.Supply != null && src.Supply.SupplyDate != null ?
+                    new DateTime(src.Supply.SupplyDate.DateYear ?? 1, src.Supply.SupplyDate.DateMonth ?? 1, src.Supply.SupplyDate.DateDay ?? 1) : (DateTime?)null))
+                .ForMember(dest => dest.SupplyStatus, opt => opt.MapFrom(src => src.Supply != null ? src.Supply.SupplyStatus : null))
+                .ForMember(dest => dest.ProductName, opt => opt.MapFrom(src => src.Product != null ? src.Product.ProductName : null))
+                .ForMember(dest => dest.ProductCategoryConcat, opt => opt.MapFrom(src => src.Product != null ? src.Product.ProductCategoryConcat : null))
+                .ForMember(dest => dest.Brand, opt => opt.MapFrom(src => src.Product != null ? src.Product.Brand : null))
+                .ReverseMap();
 
+            CreateMap<OrderDetailsFact, OrderDetailsFactDTO>()
+                .ForMember(dest => dest.ProductName, opt => opt.MapFrom(src => src.Product != null ? src.Product.ProductName : null))
+                .ForMember(dest => dest.ProductCategoryConcat, opt => opt.MapFrom(src => src.Product != null ? src.Product.ProductCategoryConcat : null))
+                .ForMember(dest => dest.Brand, opt => opt.MapFrom(src => src.Product != null ? src.Product.Brand : null))
+                .ForMember(dest => dest.EmployeeName, opt => opt.MapFrom(src => src.Employee != null ? src.Employee.FirstName + " " + src.Employee.LastName : null))
+                .ForMember(dest => dest.CustomerTypeName, opt => opt.MapFrom(src => src.CustomerType != null ? src.CustomerType.TypeName : null))
+                .ForMember(dest => dest.DiscountRate, opt => opt.MapFrom(src => src.CustomerType != null ? src.CustomerType.DiscountRate : null))
+                .ForMember(dest => dest.PeriodStartDate, opt => opt.MapFrom(src => src.PeriodStart != null ? new DateTime(src.PeriodStart.DateYear ?? 1, src.PeriodStart.DateMonth ?? 1, src.PeriodStart.DateDay ?? 1) : (DateTime?)null))
+                .ForMember(dest => dest.PeriodEndDate, opt => opt.MapFrom(src => src.PeriodEnd != null ? new DateTime(src.PeriodEnd.DateYear ?? 1, src.PeriodEnd.DateMonth ?? 1, src.PeriodEnd.DateDay ?? 1) : (DateTime?)null))
+                .ReverseMap();
         }
     }
 }

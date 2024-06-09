@@ -1,0 +1,206 @@
+﻿@page "/orderfact"
+
+@inject IOrderDetailsFactService OrderDetailsFactService
+@inject NavigationManager NavigationManager
+@inject IJSRuntime _js
+
+<h3>Order Details Facts</h3>
+
+<div class="row mb-3">
+    <div class="col-auto">
+        <select class="form-select" @bind="SelectedCustomerTypeId">
+            <option value="">All Customer Types</option>
+            @foreach (var customerType in CustomerTypes.OrderBy(ct => ct))
+            {
+                <option value="@customerType">@customerType</option>
+            }
+        </select>
+    </div>
+    <div class="col-md-2">
+        <select class="form-select" @bind="SelectedProductId">
+            <option value="">All Products</option>
+            @foreach (var product in Products.OrderBy(p => p))
+            {
+                <option value="@product">@product</option>
+            }
+        </select>
+    </div>
+    <div class="col-md-2">
+        <select class="form-select" @bind="SelectedEmployeeId">
+            <option value="">All Employees</option>
+            @foreach (var employee in Employees.OrderBy(e => e))
+            {
+                <option value="@employee">@employee</option>
+            }
+        </select>
+    </div>
+
+    <div class="col-auto d-flex align-items-center justify-content-center">
+        <div style="border-left: 1px solid #ddd; height: 100%;"></div>
+    </div>
+
+    <div class="col-auto">
+        <select class="form-select" @bind="SelectedMonth">
+            <option value="">Month</option>
+            @foreach (var month in Enumerable.Range(1, 12))
+            {
+                <option value="@month">@CultureInfo.CurrentCulture.DateTimeFormat.GetMonthName(month)</option>
+            }
+        </select>
+    </div>
+    <div class="col-auto">
+        <select class="form-select" @bind="SelectedYear">
+            <option value="">Year</option>
+            @foreach (var year in AvailableYears)
+            {
+                <option value="@year">@year</option>
+            }
+        </select>
+    </div>
+    <div class="col-md-2 text-end ">
+        <button class="btn btn-outline-success" @onclick="ExportToCsv"><span class="material-icons">download</span> Export to CSV</button>
+    </div>
+</div>
+
+
+@if (IsProcessing)
+{
+    <div style="position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);">
+        <div class="spinner-border" role="status">
+            <span class="visually-hidden">Loading...</span>
+        </div>
+    </div>
+}
+else
+{
+    <table class="table table-bordered">
+        <thead>
+            <tr>
+                <th>Employee Name</th>
+                <th>Product Name</th>
+                <th>Customer Type</th>
+                <th>Period Start</th>
+                <th>Period End</th>
+                <th>Order Count</th>
+                <th>Average Customer Sum</th>
+                <th>Average Sales Quantity Change</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var fact in FilteredOrderDetailsFacts)
+            {
+                <tr>
+                    <td>@fact.EmployeeName</td>
+                    <td>@fact.ProductName</td>
+                    <td>@fact.CustomerTypeName</td>
+                    <td>@fact.PeriodStartDate?.ToString("dd.MM.yyyy")</td>
+                    <td>@fact.PeriodEndDate?.ToString("dd.MM.yyyy")</td>
+                    <td>@fact.OrderCount</td>
+                    <td>₴ @fact.AverageCustomerSum</td>
+                    <td>@fact.AverageSalesQuantityChangePercentage</td>
+                    <td>
+                        <button class="btn btn-outline-dark" @onclick="() => ViewOrderDetailsFact(fact.OrderDetailsId)">
+                            <span class="material-icons">visibility</span> View Details
+                        </button>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+<_OrderDetailsFactModal OrderDetailsFactId="SelectedOrderDetailsFactId"></_OrderDetailsFactModal>
+
+@code {
+    private List<OrderDetailsFactDTO> OrderDetailsFacts { get; set; } = new List<OrderDetailsFactDTO>();
+    private bool IsProcessing { get; set; }
+    private string SelectedCustomerTypeId { get; set; } = "";
+    private string SelectedProductId { get; set; } = "";
+    private string SelectedEmployeeId { get; set; } = "";
+    private int? SelectedMonth { get; set; }
+    private int? SelectedYear { get; set; }
+    private List<string> CustomerTypes { get; set; } = new List<string>();
+    private List<string> Products { get; set; } = new List<string>();
+    private List<string> Employees { get; set; } = new List<string>();
+    private List<int> AvailableYears { get; set; } = new List<int>();
+    private int SelectedOrderDetailsFactId { get; set; } = 0;
+
+    protected override async Task OnInitializedAsync()
+    {
+        IsProcessing = true;
+        OrderDetailsFacts = await OrderDetailsFactService.GetAllOrderDetailsFacts();
+        CustomerTypes = OrderDetailsFacts.Select(f => f.CustomerTypeName).Distinct().ToList();
+        Products = OrderDetailsFacts.Select(f => f.ProductName).Distinct().ToList();
+        Employees = OrderDetailsFacts.Select(f => f.EmployeeName).Distinct().ToList();
+        AvailableYears = OrderDetailsFacts.Select(f => f.PeriodStartDate?.Year ?? 0).Distinct().OrderBy(y => y).ToList();
+        IsProcessing = false;
+    }
+
+    private async Task ViewOrderDetailsFact(int orderDetailsFactId)
+    {
+        SelectedOrderDetailsFactId = orderDetailsFactId;
+        await _js.InvokeVoidAsync("ShowOrdFactModal");
+    }
+
+    private IEnumerable<OrderDetailsFactDTO> FilteredOrderDetailsFacts
+    {
+        get
+        {
+            var filtered = OrderDetailsFacts.AsEnumerable();
+
+            if (!string.IsNullOrEmpty(SelectedCustomerTypeId))
+            {
+                filtered = filtered.Where(f => f.CustomerTypeName == SelectedCustomerTypeId);
+            }
+
+            if (!string.IsNullOrEmpty(SelectedProductId))
+            {
+                filtered = filtered.Where(f => f.ProductName == SelectedProductId);
+            }
+
+            if (!string.IsNullOrEmpty(SelectedEmployeeId))
+            {
+                filtered = filtered.Where(f => f.EmployeeName == SelectedEmployeeId);
+            }
+
+            if (SelectedMonth.HasValue && SelectedYear.HasValue)
+            {
+                var startDate = new DateTime(SelectedYear.Value, SelectedMonth.Value, 1);
+                var endDate = startDate.AddMonths(1).AddDays(-1);
+                filtered = filtered.Where(f => f.PeriodStartDate >= startDate && f.PeriodEndDate <= endDate);
+            }
+
+            return filtered;
+        }
+    }
+
+    private async Task ExportToCsv()
+    {
+        var records = FilteredOrderDetailsFacts.ToList();
+
+        if (records.Any())
+        {
+            using var memoryStream = new MemoryStream();
+            using (var writer = new StreamWriter(memoryStream))
+            using (var csv = new CsvWriter(writer, CultureInfo.InvariantCulture))
+            {
+                csv.WriteRecords(records);
+                await writer.FlushAsync();
+            }
+
+            var csvData = memoryStream.ToArray();
+            var fileName = "OrderDetailsFacts.csv";
+
+            // Use NavigationManager to trigger download
+            var base64 = Convert.ToBase64String(csvData);
+            var url = $"data:text/csv;base64,{base64}";
+            NavigationManager.NavigateTo(url);
+            await _js.ToastrSuccess("CSV file successfully exported.");
+        }
+        else
+        {
+            await _js.ToastrFailure("No records to export.");
+        }
+    }
+}

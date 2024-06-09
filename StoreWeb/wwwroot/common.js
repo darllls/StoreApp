@@ -80,3 +80,19 @@ function ShowShipmentModal() {
 function HideShipmentModal() {
     $('#shipmentInvoicesModal').modal('hide');
 };
+
+function ShowSupFactModal() {
+    $('#supplyDetailsFactModal').modal('show');
+};
+
+function HideSupFactModal() {
+    $('#supplyDetailsFactModal').modal('hide');
+};
+
+function ShowOrdFactModal() {
+    $('#orderDetailsFactModal').modal('show');
+};
+
+function HideOrdFactModal() {
+    $('#orderDetailsFactModal').modal('hide');
+};
