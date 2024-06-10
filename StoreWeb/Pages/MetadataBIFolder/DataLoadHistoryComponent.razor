@@ -1,0 +1,132 @@
+﻿@page "/metadata"
+@inject IDataLoadHistoryService DataLoadHistoryService
+@inject IJSRuntime _js
+
+<h3>Data Load History</h3>
+
+<div class="row mb-3">
+    <div class="col-auto">
+        <button class="btn btn-outline-danger" @onclick="ClearWH"><span class="material-icons">delete_forever</span> Clear WH</button>
+    </div>
+    <div class="col-auto">
+        <button class="btn btn-outline-primary" @onclick="PrimaryFillStaging"><span class="material-icons">sync</span> Primary Fill Staging</button>
+    </div>
+    <div class="col-auto">
+        <button class="btn btn-outline-primary" @onclick="PrimaryFillWarehouse"><span class="material-icons">download</span> Primary Fill Warehouse</button>
+    </div>
+    <div class="col-auto">
+        <button class="btn btn-outline-info" @onclick="IncrementalFillStaging"><span class="material-icons">find_replace</span> Incremental Fill Staging</button>
+    </div>
+    <div class="col-auto">
+        <button class="btn btn-outline-info" @onclick="IncrementalFillWarehouse"><span class="material-icons">add_circle</span> Incremental Fill Warehouse</button>
+    </div>
+</div>
+
+
+<div class="card">
+    <div class="card-header">
+        <h5 class="card-title">Latest DataLoadHistory</h5>
+    </div>
+    <div class="card-body">
+        <p><strong>Load Rows:</strong> @LatestDataLoadHistory.LoadRows</p>
+        <p><strong>Load Datetime:</strong> @LatestDataLoadHistory.LoadDatetime</p>
+        <p><strong>Load Time:</strong> @LatestDataLoadHistory.LoadTime ms</p>
+        <p><strong>Affected Table Count:</strong> @LatestDataLoadHistory.AffectedTableCount</p>
+        <p><strong>Source Table Count:</strong> @LatestDataLoadHistory.SourceTableCount</p>
+    </div>
+</div>
+
+@if (IsProcessing)
+{
+    <div style="position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);">
+        <div class="spinner-border" role="status">
+            <span class="visually-hidden">Loading...</span>
+        </div>
+    </div>
+}
+else
+{
+    <table class="table table-bordered">
+        <thead>
+            <tr>
+                <th>Load Rows</th>
+                <th>Load Datetime</th>
+                <th>Load Time</th>
+                <th>Affected Table Count</th>
+                <th>Source Table Count</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var history in DataLoadHistories)
+            {
+                <tr>
+                    <td>@history.LoadRows</td>
+                    <td>@history.LoadDatetime</td>
+                    <td>@history.LoadTime ms</td>
+                    <td>@history.AffectedTableCount</td>
+                    <td>@history.SourceTableCount</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@code {
+    private bool IsProcessing = true;
+    private List<DataLoadHistoryDTO> DataLoadHistories;
+    private DataLoadHistoryDTO LatestDataLoadHistory = new DataLoadHistoryDTO();
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadData();
+    }
+
+    private async Task LoadData()
+    {
+        IsProcessing = true;
+        DataLoadHistories = await DataLoadHistoryService.GetAllDataLoadHistoriesAsync();
+        LatestDataLoadHistory = await DataLoadHistoryService.GetLatestDataLoadHistoryAsync();
+        IsProcessing = false;
+    }
+
+    private async Task ClearWH()
+    {
+        var confirmed = await _js.InvokeAsync<bool>("confirm", "Are you sure you want to clear the warehouse?");
+        if (confirmed)
+        {
+            using var dbContext = new StoreDbContext();
+            await dbContext.Database.ExecuteSqlRawAsync("EXECUTE [dbo].[ClearWarehouseProcedure]");
+            await LoadData();
+        }
+    }
+
+    private async Task PrimaryFillStaging()
+    {
+        using var dbContext = new StoreDbContext();
+        await dbContext.Database.ExecuteSqlRawAsync("EXECUTE [dbo].[PrimaryFillStagingProcedure]");
+        await LoadData();
+    }
+
+    private async Task PrimaryFillWarehouse()
+    {
+        using var dbContext = new StoreDbContext();
+        await dbContext.Database.ExecuteSqlRawAsync("EXECUTE [dbo].[PrimaryFillWarehouseProcedure]");
+        await LoadData();
+    }
+
+    private async Task IncrementalFillStaging()
+    {
+        using var dbContext = new StoreDbContext();
+        await dbContext.Database.ExecuteSqlRawAsync("EXECUTE [dbo].[IncrementalFillStagingProcedure]");
+        await LoadData();
+    }
+
+    private async Task IncrementalFillWarehouse()
+    {
+        using var dbContext = new StoreDbContext();
+        await dbContext.Database.ExecuteSqlRawAsync("EXECUTE [dbo].[IncrementalFillWarehouseProcedure]");
+        await LoadData();
+    }
+
+
+}

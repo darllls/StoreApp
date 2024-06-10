@@ -18,5 +18,6 @@ builder.Services.AddScoped<IOrderService, OrderService>();
 builder.Services.AddScoped<ISupplyService, SupplyService>();   
 builder.Services.AddScoped<ISupplyDetailsFactService, SupplyDetailsFactService>();
 builder.Services.AddScoped<IOrderDetailsFactService, OrderDetailsFactService>();
+builder.Services.AddScoped<IDataLoadHistoryService, DataLoadHistoryService>();
 
 await builder.Build().RunAsync();

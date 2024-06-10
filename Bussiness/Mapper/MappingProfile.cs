@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using DataContext.Models;
+using DataContextMetadata.Models;
 using DataContextWH.Models;
 using DTOs;
 using System;
@@ -14,6 +15,7 @@ namespace Business.Mapper
     {
         public MappingProfile()
         {
+            CreateMap<Dataloadhistory, DataLoadHistoryDTO>().ReverseMap();
             CreateMap<Store, StoreDTO>().ReverseMap();
             CreateMap<Brand, BrandDTO>().ReverseMap();
             CreateMap<ProductCategory, CategoryDTO>().ReverseMap();

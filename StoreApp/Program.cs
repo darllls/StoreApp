@@ -33,6 +33,7 @@ builder.Services.AddScoped<ISupplyRepository, SupplyRepository>();
 
 builder.Services.AddScoped<ISupplyDetailsFactRepository, SupplyDetailsFactRepository>();
 builder.Services.AddScoped<IOrderDetailsFactRepository, OrderDetailsFactRepository>();
+builder.Services.AddScoped<IDataLoadHistoryRepository, DataLoadHistoryRepository>();
 
 builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 
