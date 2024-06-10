@@ -95,8 +95,89 @@ namespace Business.Repository
 
         public async Task<SupplyDTO> UpdateSupplyAsync(int supplyId, SupplyDTO supplyDto)
         {
-            throw new NotImplementedException();
+            // Перевірка наявності поставки з вказаним ID
+            var existingSupply = await _context.Supplies
+                .Include(s => s.SupplyDetails)
+                .ThenInclude(d => d.ShipmentInvoices)
+                .FirstOrDefaultAsync(s => s.SupplyId == supplyId);
+
+            if (existingSupply == null)
+            {
+                throw new Exception("Supply not found");
+            }
+
+            // Оновлення основних властивостей поставки
+            existingSupply.SupplyDate = supplyDto.SupplyDate;
+            existingSupply.Status = await _context.SupplyStatuses.FindAsync(supplyDto.SupplyStatusId);
+            existingSupply.Supplier = await _context.Suppliers.FindAsync(supplyDto.SupplierId);
+            existingSupply.Sum = supplyDto.SupplyDetails.Sum(d => d.Amount * d.PricePerUnit);
+
+            // Видалення поточних деталей поставки та їх рахунків відправлення
+            foreach (var existingDetail in existingSupply.SupplyDetails)
+            {
+                _context.ShipmentInvoices.RemoveRange(existingDetail.ShipmentInvoices);
+                await _context.SaveChangesAsync();
+            }
+            _context.SupplyDetails.RemoveRange(existingSupply.SupplyDetails);
+            await _context.SaveChangesAsync();
+
+            // Додавання нових деталей поставки та рахунків відправлення
+            foreach (var detailDto in supplyDto.SupplyDetails)
+            {
+                var detail = _mapper.Map<SupplyDetail>(detailDto);
+                var product = await _context.Products.FirstOrDefaultAsync(p => p.ProductName == detailDto.ProductName);
+                detail.Product = product;
+
+                foreach (var invoiceDto in detailDto.ShipmentInvoices)
+                {
+                    var invoice = _mapper.Map<ShipmentInvoice>(invoiceDto);
+
+                    var employeeNames = invoiceDto.EmployeeName.Split(' ');
+                    var employeeFirstName = employeeNames[0];
+                    var employeeLastName = employeeNames.Length > 1 ? employeeNames[1] : "";
+                    var employee = await _context.Employees.Include(e => e.Store).FirstOrDefaultAsync(e => e.FirstName == employeeFirstName && e.LastName == employeeLastName);
+
+                    if (employee == null)
+                    {
+                        throw new Exception("Employee not found");
+                    }
+
+                    var store = await _context.Stores.FirstOrDefaultAsync(s => s.StoreName == employee.Store.StoreName);
+                    if (store == null)
+                    {
+                        throw new Exception("Store not found");
+                    }
+
+                    var availableProduct = await _context.AvailableProducts
+                        .FirstOrDefaultAsync(ap => ap.Store == store && ap.Product == detail.Product);
+
+                    if (availableProduct == null)
+                    {
+                        availableProduct = new AvailableProduct
+                        {
+                            StoreId = store.StoreId,
+                            ProductId = detail.Product.ProductId,
+                            Quantity = (int?)invoice.TotalAmount
+                        };
+                        _context.AvailableProducts.Add(availableProduct);
+                        await _context.SaveChangesAsync();
+                    }
+
+                    invoice.AvailableProduct = availableProduct;
+                    invoice.Employee = employee;
+                    detail.ShipmentInvoices.Add(invoice);
+                }
+
+                existingSupply.SupplyDetails.Add(detail);
+            }
+
+            existingSupply.UpdateDate = DateTime.Now;
+            _context.Supplies.Update(existingSupply);
+            await _context.SaveChangesAsync();
+
+            return _mapper.Map<SupplyDTO>(existingSupply);
         }
+
 
         public async Task<bool> DeleteSupplyAsync(int supplyId)
         {

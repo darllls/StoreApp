@@ -1,6 +1,7 @@
 ﻿@page "/metadata"
 @inject IDataLoadHistoryService DataLoadHistoryService
 @inject IJSRuntime _js
+@inject IProcedureService ProcedureService
 
 <h3>Data Load History</h3>
 
@@ -94,38 +95,38 @@ else
         var confirmed = await _js.InvokeAsync<bool>("confirm", "Are you sure you want to clear the warehouse?");
         if (confirmed)
         {
-            using var dbContext = new StoreDbContext();
-            await dbContext.Database.ExecuteSqlRawAsync("EXECUTE [dbo].[ClearWarehouseProcedure]");
+            await ProcedureService.ClearWarehouseAsync();
             await LoadData();
+            await _js.ToastrSuccess("Warehouse cleared successfully.");
         }
     }
 
     private async Task PrimaryFillStaging()
     {
-        using var dbContext = new StoreDbContext();
-        await dbContext.Database.ExecuteSqlRawAsync("EXECUTE [dbo].[PrimaryFillStagingProcedure]");
+        await ProcedureService.PrimaryFillStagingAsync();
         await LoadData();
+        await _js.ToastrSuccess("Primary data filled into staging successfully.");
     }
 
     private async Task PrimaryFillWarehouse()
     {
-        using var dbContext = new StoreDbContext();
-        await dbContext.Database.ExecuteSqlRawAsync("EXECUTE [dbo].[PrimaryFillWarehouseProcedure]");
+        await ProcedureService.PrimaryFillWarehouseAsync();
         await LoadData();
+        await _js.ToastrSuccess("Primary data filled into warehouse successfully.");
     }
 
     private async Task IncrementalFillStaging()
     {
-        using var dbContext = new StoreDbContext();
-        await dbContext.Database.ExecuteSqlRawAsync("EXECUTE [dbo].[IncrementalFillStagingProcedure]");
+        await ProcedureService.IncrementalFillStagingAsync();
         await LoadData();
+        await _js.ToastrSuccess("Incremental data filled into staging successfully.");
     }
 
     private async Task IncrementalFillWarehouse()
     {
-        using var dbContext = new StoreDbContext();
-        await dbContext.Database.ExecuteSqlRawAsync("EXECUTE [dbo].[IncrementalFillWarehouseProcedure]");
+        await ProcedureService.IncrementalFillWarehouseAsync();
         await LoadData();
+        await _js.ToastrSuccess("Incremental data filled into warehouse successfully.");
     }
 
 
