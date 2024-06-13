@@ -1,7 +1,117 @@
 ﻿@page "/"
+@inject NavigationManager NavigationManager
 
 <PageTitle>Home</PageTitle>
 
-<h1>Hello, world!</h1>
+<div class="container mt-5">
+    <h2 class="text-center">OLTP</h2>
+    <br />
+    <div class="row justify-content-center">
+        <div class="col-auto">
+            <button class="btn btn-outline-dark btn-lg btn-block" @onclick="NavigateToCustomers">
+                <span class="material-icons">people</span> Customers
+            </button>
+        </div>
+        <div class="col-auto">
+            <button class="btn btn-outline-dark btn-lg btn-block" @onclick="NavigateToEmployees">
+                <span class="material-icons">assignment_ind</span> Employees
+            </button>
+        </div>
+        <div class="col-auto">
+            <button class="btn btn-outline-dark btn-lg btn-block" @onclick="NavigateToProducts">
+                <span class="material-icons">inventory</span> Products
+            </button>
+        </div>
+        <div class="col-auto">
+            <button class="btn btn-outline-dark btn-lg btn-block" @onclick="NavigateToOrders">
+                <span class="material-icons">shopping_cart</span> Orders
+            </button>
+        </div>
+        <div class="col-auto">
+            <button class="btn btn-outline-dark btn-lg btn-block" @onclick="NavigateToSupplies">
+                <span class="material-icons">local_shipping</span> Supplies
+            </button>
+        </div>
+    </div>
 
+    <hr class="my-5">
 
+    <h2 class="text-center">OLAP</h2>
+    <br />
+    <div class="row justify-content-center">
+        <div class="col-auto">
+            <button class="btn btn-outline-dark btn-lg btn-block" @onclick="NavigateToMetadata">
+                <span class="material-icons">update</span> Metadata Load History
+            </button>
+        </div>
+        <div class="col-auto">
+            <button class="btn btn-outline-dark btn-lg btn-block" @onclick="NavigateToSupplyFact">
+                <span class="material-icons">forklift</span> Supply Fact
+            </button>
+        </div>
+        <div class="col-auto">
+            <button class="btn btn-outline-dark btn-lg btn-block" @onclick="NavigateToOrderFact">
+                <span class="material-icons">shopping_cart_checkout</span> Order Fact
+            </button>
+        </div>
+    </div>
+
+    <hr class="my-5">
+
+    <h2 class="text-center">Analytics</h2>
+    <br />
+    <div class="row justify-content-center">
+        <div class="col-auto">
+            <button class="btn btn-outline-dark btn-lg btn-block" @onclick="NavigateToBusinessAnalytics">
+                <span class="material-icons">bar_chart</span> Business Analytics
+            </button>
+        </div>
+    </div>
+</div>
+
+@code {
+    private void NavigateToCustomers()
+    {
+        NavigationManager.NavigateTo("/customers");
+    }
+
+    private void NavigateToEmployees()
+    {
+        NavigationManager.NavigateTo("/employees");
+    }
+
+    private void NavigateToProducts()
+    {
+        NavigationManager.NavigateTo("/products");
+    }
+
+    private void NavigateToOrders()
+    {
+        NavigationManager.NavigateTo("/orders");
+    }
+
+    private void NavigateToSupplies()
+    {
+        NavigationManager.NavigateTo("/supplies");
+    }
+
+    private void NavigateToMetadata()
+    {
+        NavigationManager.NavigateTo("/metadata");
+    }
+
+    private void NavigateToSupplyFact()
+    {
+        NavigationManager.NavigateTo("/suppliesfact");
+    }
+
+    private void NavigateToOrderFact()
+    {
+        NavigationManager.NavigateTo("/orderfact");
+    }
+
+    private void NavigateToBusinessAnalytics()
+    {
+        NavigationManager.NavigateTo("/bisanal");
+    }
+}

@@ -62,11 +62,6 @@ namespace Business.Repository
                 .ThenInclude(s => s.City)
                 .FirstOrDefaultAsync(e => e.EmployeeId == employeeId);
 
-            //if (employee == null)
-            //{
-            //    throw new NotFoundException($"Employee with ID {employeeId} not found.");
-            //}
-
             return _mapper.Map<EmployeeDTO>(employee);
         }
 
@@ -118,7 +113,7 @@ namespace Business.Repository
                     }
                 }
             }
-
+            existingEmployee.UpdateDate = DateTime.Now;
             await _context.SaveChangesAsync();
 
             return _mapper.Map<EmployeeDTO>(existingEmployee);

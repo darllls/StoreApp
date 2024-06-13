@@ -2,7 +2,7 @@
 @inject ISupplyService SupplyService
 @inject NavigationManager NavigationManager
 @inject IJSRuntime _js
-@inject NavigationManager navigationManager
+@using Radzen.Blazor
 
 <_DeleteConfirmation IsParentComponentProcessing="IsProcessing" ConfirmationChanged="ConfirmDelete_Click"></_DeleteConfirmation>
 
@@ -36,60 +36,37 @@
 }
 else
 {
-    <table class="table table-bordered">
-        <thead>
-            <tr>
-                <th>Supply Number</th>
-                <th>Supplier</th>
-                <th>Total Sum</th>
-                <th>Supply Date</th>
-                <th>Status</th>
-                <th>Actions</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var supply in FilteredSupplies)
-            {
-                <tr>
-                    <td>@supply.SupplyNumber</td>
-                    <td>
-                        <button class="btn btn-outline-dark" @onclick="() => ViewSupplierInfo(supply.SupplierId)">
-                            <span class="material-icons">info</span> @supply.SupplierName
-                        </button>
-                    </td>
-                    <td>₴ @supply.Sum</td>
-                    <td>@supply.SupplyDate?.ToString("dd.MM.yyyy")</td>
-                    <td>@supply.StatusName</td>
-                    <td>
-                        <button class="btn btn-outline-dark" @onclick="() => ViewSupplyDetails(supply.SupplyId)">
-                            <span class="material-icons">visibility</span> View Details
-                        </button>
-                        <button class="btn btn-primary" @onclick="() => UpdateSupply(supply.SupplyId)">
-                            <span class="material-icons">edit</span>
-                        </button>
-                        <button class="btn btn-danger" @onclick="() => DeleteSupply(supply.SupplyId)">
-                            <span class="material-icons">delete</span>
-                        </button>
-                    </td>
-                </tr>
-            }
-        </tbody>
-    </table>
+    <RadzenDataGrid AllowFiltering="true" AllowColumnResize="true" FilterMode="FilterMode.Advanced" PageSize="50" AllowPaging="true" AllowSorting="true"
+                    Data="@FilteredSupplies" TItem="SupplyDTO">
+        <Columns>
+            <RadzenDataGridColumn TItem="SupplyDTO" Property="SupplyNumber" Title="Number" Width="100px" />
+            <RadzenDataGridColumn TItem="SupplyDTO" Property="SupplierName" Title="Supplier" Width="150px">
+                <Template Context="data">
+                    <RadzenButton Click="@(args => ViewSupplierInfo(data.SupplierId))" Icon="info" ButtonStyle="ButtonStyle.Light" Style="width: 100%;">
+                        @data.SupplierName
+                    </RadzenButton>
+                </Template>
+            </RadzenDataGridColumn>
+            <RadzenDataGridColumn TItem="SupplyDTO" Property="Sum" Title="Sum ₴" Width="100px" />
+            <RadzenDataGridColumn TItem="SupplyDTO" Property="SupplyDate" Title="Date" Width="100px">
+                <Template Context="data">
+                    @data.SupplyDate?.ToString("dd.MM.yyyy")
+                </Template>
+            </RadzenDataGridColumn>
+            <RadzenDataGridColumn TItem="SupplyDTO" Property="StatusName" Title="Status" Width="100px" />
+            <RadzenDataGridColumn TItem="SupplyDTO" Title="Actions" Width="200px">
+                <Template Context="data">
+                    <RadzenButton Click="@(args => ViewSupplyDetails(data.SupplyId))" Icon="visibility" ButtonStyle="ButtonStyle.Dark" Text="Details" Style="margin-right: 5px;" />
+                <RadzenButton Click="@(args => UpdateSupply(data.SupplyId))" Icon="edit" ButtonStyle="ButtonStyle.Primary" Style="margin-right: 5px;"  />
+                    <RadzenButton Click="@(args => DeleteSupply(data.SupplyId))" Icon="delete" ButtonStyle="ButtonStyle.Danger" Style="margin-right: 5px;" />
+                </Template>
+            </RadzenDataGridColumn>
+        </Columns>
+    </RadzenDataGrid>
 }
 
-<_SupplyDetailsModal SupplyId="SelectedSupplyId"></_SupplyDetailsModal>
-<_SupplierInfoModal SupplierId="selectedSupplierId"></_SupplierInfoModal>
-
-@* <script>
-    function ShowSupplierModal() {
-        $('#supplierInfoModal').modal('show');
-    };
-
-    function HideSupplierModal() {
-        $('#supplierInfoModal').modal('hide');
-    };
-
-</script> *@
+<_SupplyDetailsModal SupplyId="@SelectedSupplyId"></_SupplyDetailsModal>
+<_SupplierInfoModal SupplierId="@selectedSupplierId"></_SupplierInfoModal>
 
 @code {
     private List<SupplyDTO> Supplies { get; set; } = new List<SupplyDTO>();
@@ -102,7 +79,7 @@ else
 
     protected override async Task OnInitializedAsync()
     {
-        var uri = navigationManager.ToAbsoluteUri(navigationManager.Uri);
+        var uri = NavigationManager.ToAbsoluteUri(NavigationManager.Uri);
         if (uri.Query.Contains("search"))
         {
             var query = System.Web.HttpUtility.ParseQueryString(uri.Query);
@@ -132,7 +109,6 @@ else
         s.SupplyNumber.Contains(searchText, StringComparison.OrdinalIgnoreCase) ||
         s.SupplyDetails.Any(sd => sd.ShipmentInvoices.Any(si => si.EmployeeName.Contains(searchText, StringComparison.OrdinalIgnoreCase))) ||
         s.StatusName.Contains(searchText, StringComparison.OrdinalIgnoreCase)));
-
 
     private void CreateSupply()
     {
@@ -173,6 +149,5 @@ else
     {
         selectedSupplierId = supplierId;
         await _js.InvokeVoidAsync("ShowSupplierModal");
-
     }
 }

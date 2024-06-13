@@ -2,6 +2,7 @@
 @inject IEmployeeService _employeeService
 @inject NavigationManager _nav
 @inject IJSRuntime _js
+@using Radzen.Blazor
 
 <_DeleteConfirmation IsParentComponentProcessing="IsProcessing" ConfirmationChanged="ConfirmDelete_Click"></_DeleteConfirmation>
 
@@ -44,42 +45,30 @@
 }
 else
 {
-    <table class="table table-bordered">
-        <thead>
-            <tr>
-                <th>First Name</th>
-                <th>Last Name</th>
-                <th>Phone</th>
-                <th>Store</th>
-                <th></th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var employee in FilteredEmployees)
-            {
-                <tr>
-                    <td>@employee.FirstName</td>
-                    <td>@employee.LastName</td>
-                    <td>@employee.Phone</td>
-                    <td>@GetStoreInfo(employee.StoreId)</td>
-                    <td>
-                        <button class="btn btn-primary" @onclick="() => EditEmployee(employee.EmployeeId)">
-                            <span class="material-icons">edit</span>
-                        </button>
-                        <button class="btn btn-danger" @onclick="() => DeleteEmployee(employee.EmployeeId)">
-                            <span class="material-icons">delete</span>
-                        </button>
-                        <button class="btn btn-outline-dark" @onclick="() => ViewOrders(employee)">
-                            <span class="material-icons">visibility</span> View Orders
-                        </button>
-                        <button class="btn btn-outline-dark" @onclick="() => ViewSupplies(employee)">
-                            <span class="material-icons">local_shipping</span> View Supplies
-                        </button>
-                    </td>
-                </tr>
-            }
-        </tbody>
-    </table>
+    <RadzenDataGrid AllowFiltering="true" AllowColumnResize="true" FilterMode="FilterMode.Advanced" PageSize="50" AllowPaging="true" AllowSorting="true"
+                    Data="FilteredEmployees" TItem="EmployeeDTO" LogicalFilterOperator="LogicalFilterOperator.Or">
+        <Columns>
+            <RadzenDataGridColumn TItem="EmployeeDTO" Title="Name" Width="150px">
+                <Template Context="data">
+                    @data.FirstName @data.LastName
+                </Template>
+            </RadzenDataGridColumn>
+            <RadzenDataGridColumn TItem="EmployeeDTO" Property="Phone" Title="Phone" Width="150px" />
+            <RadzenDataGridColumn TItem="EmployeeDTO" Title="Store" Width="200px">
+                <Template Context="data">
+                    @GetStoreInfo(data.StoreId)
+                </Template>
+            </RadzenDataGridColumn>
+            <RadzenDataGridColumn TItem="EmployeeDTO" Title="Actions" Width="200px">
+                <Template Context="data">
+                    <RadzenButton Click="@(args => EditEmployee(data.EmployeeId))" Icon="edit" Style="margin-right: 5px; width: 30px; height: 30px;" />
+                    <RadzenButton Click="@(args => DeleteEmployee(data.EmployeeId))" Icon="delete" ButtonStyle="ButtonStyle.Danger" Style="margin-right: 5px; width: 30px; height: 30px;" />
+                    <RadzenButton Click="@(args => ViewOrders(data))" Icon="shopping_cart" ButtonStyle="ButtonStyle.Dark" Style="width: 30px; height: 30px;" />
+                    <RadzenButton Click="@(args => ViewSupplies(data))" Icon="local_shipping" ButtonStyle="ButtonStyle.Dark" Style="width: 30px; height: 30px;" />
+                </Template>
+            </RadzenDataGridColumn>
+        </Columns>
+    </RadzenDataGrid>
 }
 
 @code {
@@ -134,7 +123,6 @@ else
 
         var searchParts = searchText.Split(' ', StringSplitOptions.RemoveEmptyEntries);
 
-        // Search logic: presence of each found word in first names or last names
         foreach (var part in searchParts)
         {
             if (e.FirstName.StartsWith(part, StringComparison.OrdinalIgnoreCase) ||
@@ -166,13 +154,11 @@ else
 
     private void CreateEmployee()
     {
-        // Navigate to create employee page
         _nav.NavigateTo("/employees/create");
     }
 
     private void EditEmployee(int employeeId)
     {
-        // Navigate to edit employee page
         _nav.NavigateTo($"/employees/edit/{employeeId}");
     }
 
@@ -184,7 +170,6 @@ else
 
     private void ViewOrders(EmployeeDTO employee)
     {
-        // Navigate to view orders for employee with the employee's name as a search query
         _nav.NavigateTo($"/orders?search={employee.FirstName} {employee.LastName}");
     }
 
@@ -203,8 +188,6 @@ else
 
     private void ViewSupplies(EmployeeDTO employee)
     {
-        // Navigate to view supplies for employee with the employee's name as a search query
-       _nav.NavigateTo($"/supplies?search={employee.FirstName} {employee.LastName}");
+        _nav.NavigateTo($"/supplies?search={employee.FirstName} {employee.LastName}");
     }
-
 }

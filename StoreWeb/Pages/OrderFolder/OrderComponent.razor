@@ -2,12 +2,11 @@
 @inject IOrderService OrderService
 @inject NavigationManager NavigationManager
 @inject IJSRuntime _js
-@inject NavigationManager navigationManager
+@using Radzen.Blazor
 
 <_DeleteConfirmation IsParentComponentProcessing="IsProcessing" ConfirmationChanged="ConfirmDelete_Click"></_DeleteConfirmation>
 
 <h3>Orders</h3>
-
 
 <div class="row mb-3">
     <div class="col-md-3">
@@ -27,8 +26,6 @@
     </div>
 </div>
 
-
-
 @if (IsProcessing)
 {
     <div style="position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);">
@@ -39,45 +36,33 @@
 }
 else
 {
-    <table class="table table-bordered">
-        <thead>
-            <tr>
-                <th>Order Number</th>
-                <th>Customer Name</th>
-                <th>Employee Name</th>
-                <th>Store Name</th>
-                <th>City</th>
-                <th>Total Amount</th>
-                <th>Date</th>
-                <th>Actions</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var order in FilteredOrders)
-            {
-                <tr>
-                    <td>@order.Number</td>
-                    <td>@order.CustomerName</td>
-                    <td>@order.EmployeeName</td>
-                    <td>@order.StoreName</td>
-                    <td>@order.CityName</td>
-                    <td>₴ @order.TotalAmount</td>
-                    <td>@order.OrderDate.ToString("dd.MM.yyyy")</td>
-                    <td>
-                        <button class="btn btn-outline-dark" @onclick="() => ViewOrderItems(order.OrderId)">
-                            <span class="material-icons">visibility</span> View Items
-                        </button>
-                        <button class="btn btn-primary" @onclick="() => UpdateOrder(order.OrderId)">
-                            <span class="material-icons">edit</span>
-                        </button>
-                        <button class="btn btn-danger" @onclick="() => DeleteOrder(order.OrderId)">
-                            <span class="material-icons">delete</span>
-                        </button>
-                    </td>
-                </tr>
-            }
-        </tbody>
-    </table>
+    <RadzenDataGrid AllowFiltering="true" AllowColumnResize="true" FilterMode="FilterMode.Advanced" PageSize="50" AllowPaging="true" AllowSorting="true"
+                    Data="FilteredOrders" TItem="OrderDTO">
+        <Columns>
+            <RadzenDataGridColumn TItem="OrderDTO" Property="Number" Title="Number" Width="150px" />
+            <RadzenDataGridColumn TItem="OrderDTO" Title="Customer Name" Width="150px">
+                <Template Context="data">
+                    @data.CustomerName
+                </Template>
+            </RadzenDataGridColumn>
+            <RadzenDataGridColumn TItem="OrderDTO" Property="EmployeeName" Title="Employee Name" Width="150px" />
+            <RadzenDataGridColumn TItem="OrderDTO" Property="StoreName" Title="Store Name" Width="120px" />
+            <RadzenDataGridColumn TItem="OrderDTO" Property="CityName" Title="City" Width="100px" />
+            <RadzenDataGridColumn TItem="OrderDTO" Property="TotalAmount" Title="Total ₴" Width="150px" />
+            <RadzenDataGridColumn TItem="OrderDTO" Property="OrderDate" Title="Date" Width="100px">
+                <Template Context="data">
+                    @data.OrderDate.ToString("dd.MM.yyyy")
+                </Template>
+            </RadzenDataGridColumn>
+            <RadzenDataGridColumn TItem="OrderDTO" Title="Actions" Width="200px">
+                <Template Context="data">
+                    <RadzenButton Click="@(args => ViewOrderItems(data.OrderId))" Icon="visibility" ButtonStyle="ButtonStyle.Dark" Text="Items" Style="margin-right: 5px;" />
+                    <RadzenButton Click="@(args => UpdateOrder(data.OrderId))" Icon="edit" Style="margin-right: 5px;" />
+                    <RadzenButton Click="@(args => DeleteOrder(data.OrderId))" Icon="delete" ButtonStyle="ButtonStyle.Danger" />
+                </Template>
+            </RadzenDataGridColumn>
+        </Columns>
+    </RadzenDataGrid>
 }
 
 <_OrderItemsModal OrderId="SelectedOrderId"></_OrderItemsModal>
@@ -91,12 +76,6 @@ else
 
     protected override async Task OnInitializedAsync()
     {
-        var uri = navigationManager.ToAbsoluteUri(navigationManager.Uri);
-        if (uri.Query.Contains("search"))
-        {
-            var query = System.Web.HttpUtility.ParseQueryString(uri.Query);
-            searchText = query["search"];
-        }
         await LoadOrders();
     }
 

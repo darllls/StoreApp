@@ -45,13 +45,11 @@ public class OrderRepository : IOrderRepository
     {
         var order = _mapper.Map<Order>(orderDto);
 
-        // Retrieve Employee details based on the provided name
         var employeeNames = orderDto.EmployeeName.Split(' ');
         var employeeFirstName = employeeNames[0];
         var employeeLastName = employeeNames.Length > 1 ? employeeNames[1] : "";
         var employee = await _context.Employees.FirstOrDefaultAsync(e => e.FirstName == employeeFirstName && e.LastName == employeeLastName);
 
-        // Retrieve Customer details based on the provided name
         var customerNames = orderDto.CustomerName.Split(' ');
         var customerFirstName = customerNames[0];
         var customerLastName = customerNames.Length > 1 ? customerNames[1] : "";
@@ -59,14 +57,10 @@ public class OrderRepository : IOrderRepository
 
         if (employee != null && customer != null)
         {
-            // Set EmployeeId and CustomerId on the order
             order.EmployeeId = employee.EmployeeId;
             order.CustomerId = customer.CustomerId;
 
-            // Fetch product prices and calculate TotalAmount based on OrderItems
             decimal? totalAmount = 0;
-
-            // Clear existing order items to avoid duplication
             order.OrderItems.Clear();
 
             foreach (var orderItemDto in orderDto.OrderItems)
@@ -79,7 +73,6 @@ public class OrderRepository : IOrderRepository
                 {
                     totalAmount += orderItemDto.Amount * availableProduct.Product.Price;
 
-                    // Set the AvailableProductID for each OrderItem
                     var orderItem = _mapper.Map<OrderItem>(orderItemDto);
                     orderItem.AvailableProductId = availableProduct.AvailableProductId;
                     order.OrderItems.Add(orderItem);
@@ -87,7 +80,6 @@ public class OrderRepository : IOrderRepository
             }
             order.TotalAmount = totalAmount;
 
-            // Fetch Store details from Employee and set StoreName and CityName
             if (employee.StoreId != null)
             {
                 var store = await _context.Stores.Include(s => s.City).FirstOrDefaultAsync(s => s.StoreId == employee.StoreId);
@@ -118,13 +110,11 @@ public class OrderRepository : IOrderRepository
 
         _mapper.Map(orderDto, existingOrder);
 
-        // Retrieve Employee details based on the provided name
         var employeeNames = orderDto.EmployeeName.Split(' ');
         var employeeFirstName = employeeNames[0];
         var employeeLastName = employeeNames.Length > 1 ? employeeNames[1] : "";
         var employee = await _context.Employees.FirstOrDefaultAsync(e => e.FirstName == employeeFirstName && e.LastName == employeeLastName);
 
-        // Retrieve Customer details based on the provided name
         var customerNames = orderDto.CustomerName.Split(' ');
         var customerFirstName = customerNames[0];
         var customerLastName = customerNames.Length > 1 ? customerNames[1] : "";
@@ -132,13 +122,13 @@ public class OrderRepository : IOrderRepository
 
         if (employee != null && customer != null)
         {
-            // Set EmployeeId and CustomerId on the existing order
+
             existingOrder.EmployeeId = employee.EmployeeId;
             existingOrder.CustomerId = customer.CustomerId;
 
             existingOrder.OrderItems.Clear();
 
-            // Fetch product prices and calculate TotalAmount based on OrderItems
+
             decimal? totalAmount = 0;
             foreach (var orderItemDto in orderDto.OrderItems)
             {
@@ -150,7 +140,7 @@ public class OrderRepository : IOrderRepository
                 {
                     totalAmount += orderItemDto.Amount * availableProduct.Product.Price;
 
-                    // Set the AvailableProductID for each OrderItem
+
                     var orderItem = _mapper.Map<OrderItem>(orderItemDto);
                     orderItem.AvailableProductId = availableProduct.AvailableProductId;
                     existingOrder.OrderItems.Add(orderItem);
@@ -158,7 +148,6 @@ public class OrderRepository : IOrderRepository
             }
             existingOrder.TotalAmount = totalAmount;
 
-            // Fetch Store details from Employee and set StoreName and CityName
             if (employee.StoreId != null)
             {
                 var store = await _context.Stores.Include(s => s.City).FirstOrDefaultAsync(s => s.StoreId == employee.StoreId);
@@ -172,6 +161,7 @@ public class OrderRepository : IOrderRepository
                 }
             }
         }
+        existingOrder.UpdateDate = DateTime.Now;
 
         await _context.SaveChangesAsync();
         return _mapper.Map<OrderDTO>(existingOrder);
@@ -188,10 +178,8 @@ public class OrderRepository : IOrderRepository
         if (existingOrder == null)
             return false;
 
-        // Remove associated OrderItems
         _context.OrderItems.RemoveRange(existingOrder.OrderItems);
 
-        // Remove the order itself
         _context.Orders.Remove(existingOrder);
         await _context.SaveChangesAsync();
         return true;

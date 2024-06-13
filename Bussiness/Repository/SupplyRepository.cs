@@ -95,7 +95,6 @@ namespace Business.Repository
 
         public async Task<SupplyDTO> UpdateSupplyAsync(int supplyId, SupplyDTO supplyDto)
         {
-            // Перевірка наявності поставки з вказаним ID
             var existingSupply = await _context.Supplies
                 .Include(s => s.SupplyDetails)
                 .ThenInclude(d => d.ShipmentInvoices)
@@ -106,13 +105,11 @@ namespace Business.Repository
                 throw new Exception("Supply not found");
             }
 
-            // Оновлення основних властивостей поставки
             existingSupply.SupplyDate = supplyDto.SupplyDate;
             existingSupply.Status = await _context.SupplyStatuses.FindAsync(supplyDto.SupplyStatusId);
             existingSupply.Supplier = await _context.Suppliers.FindAsync(supplyDto.SupplierId);
             existingSupply.Sum = supplyDto.SupplyDetails.Sum(d => d.Amount * d.PricePerUnit);
 
-            // Видалення поточних деталей поставки та їх рахунків відправлення
             foreach (var existingDetail in existingSupply.SupplyDetails)
             {
                 _context.ShipmentInvoices.RemoveRange(existingDetail.ShipmentInvoices);
@@ -121,7 +118,6 @@ namespace Business.Repository
             _context.SupplyDetails.RemoveRange(existingSupply.SupplyDetails);
             await _context.SaveChangesAsync();
 
-            // Додавання нових деталей поставки та рахунків відправлення
             foreach (var detailDto in supplyDto.SupplyDetails)
             {
                 var detail = _mapper.Map<SupplyDetail>(detailDto);

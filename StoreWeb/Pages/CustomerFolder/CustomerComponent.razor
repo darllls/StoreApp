@@ -2,6 +2,7 @@
 @inject ICustomerService _customerService
 @inject NavigationManager _nav
 @inject IJSRuntime _js
+@using Radzen.Blazor
 
 <_DeleteConfirmation IsParentComponentProcessing="IsProcessing" ConfirmationChanged="ConfirmDelete_Click"></_DeleteConfirmation>
 
@@ -37,41 +38,26 @@
 }
 else
 {
-    <table class="table table-bordered">
-        <thead>
-            <tr>
-                <th>First Name</th>
-                <th>Last Name</th>
-                <th>Email</th>
-                <th>Phone</th>
-                <th>Type</th>
-                <th>Actions</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var customer in FilteredCustomers)
-            {
-                <tr>
-                    <td>@customer.FirstName</td>
-                    <td>@customer.LastName</td>
-                    <td>@customer.Email</td>
-                    <td>@customer.Phone</td>
-                    <td>@customer.CustomerTypeName</td>
-                    <td>
-                        <button class="btn btn-primary" @onclick="() => EditCustomer(customer.CustomerId)">
-                            <span class="material-icons">edit</span>
-                        </button>
-                        <button class="btn btn-danger" @onclick="() => DeleteCustomer(customer.CustomerId)">
-                            <span class="material-icons">delete</span>
-                        </button>
-                        <button class="btn btn-outline-dark" @onclick="() => ViewOrders(customer)">
-                            <span class="material-icons">visibility</span> View Orders
-                        </button>
-                    </td>
-                </tr>
-            }
-        </tbody>
-    </table>
+    <RadzenDataGrid AllowFiltering="true" AllowColumnResize="true" FilterMode="FilterMode.Advanced" PageSize="50" AllowPaging="true" AllowSorting="true"
+                    Data="FilteredCustomers" TItem="CustomerDTO" LogicalFilterOperator="LogicalFilterOperator.Or">
+        <Columns>
+            <RadzenDataGridColumn TItem="CustomerDTO" Title="Name">
+                <Template Context="data">
+                    @data.FirstName @data.LastName
+                </Template>
+            </RadzenDataGridColumn>
+            <RadzenDataGridColumn TItem="CustomerDTO" Property="Email" Title="Email" Width ="200px"/>
+            <RadzenDataGridColumn TItem="CustomerDTO" Property="Phone" Title="Phone" Width = "150px"/>
+            <RadzenDataGridColumn TItem="CustomerDTO" Property="CustomerTypeName" Title="Type" Width="150px" />
+            <RadzenDataGridColumn TItem="CustomerDTO" Title="Actions">
+                <Template Context="data">
+                    <RadzenButton Click="@(args => EditCustomer(data.CustomerId))" Icon="edit" Style="margin-right: 10px" />
+                    <RadzenButton Click="@(args => DeleteCustomer(data.CustomerId))" Icon="delete" ButtonStyle="ButtonStyle.Danger" Style="margin-right: 10px" />
+                    <RadzenButton Click="@(args => ViewOrders(data))" Icon="visibility" ButtonStyle="ButtonStyle.Dark" Text="View Orders" />
+                </Template>
+            </RadzenDataGridColumn>
+        </Columns>
+    </RadzenDataGrid>
 }
 
 @code {

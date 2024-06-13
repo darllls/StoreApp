@@ -348,6 +348,7 @@ public class ProductRepository: IProductRepository
             }
         }
 
+        existingProduct.UpdateDate = DateTime.Now;
         // Збереження змін до бази даних після додавання нових записів про доступність продукту
         await _context.SaveChangesAsync();
 
